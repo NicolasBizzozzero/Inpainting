@@ -1,0 +1,290 @@
+\NeedsTeXFormat{LaTeX2e}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Package name and information %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ProvidesPackage{lecture-notes}[2018/01/28 Bizzozzéro Nicolas custom LaTeX style]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Lecture's informations %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\lectureNotesTitle}{Apprentissage et Reconnaissance des Formes}
+\newcommand{\lectureNotesID}{[4I802]}
+\newcommand{\lectureNotesMidTitle}{Rapport du projet}
+\newcommand{\lectureNotesAuthors}{R\'ealis\'e par\\ Bizzozz\'ero Nicolas\\\&\\ Adoum Robert}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Most used packages %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{natbib}
+\usepackage[french]{babel}  % Language used
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage[makeroom]{cancel}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{fourier}
+\usepackage{graphicx}
+\usepackage{inconsolata}
+\usepackage{listings}
+\usepackage{lstautogobble}
+\usepackage{mathtools}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{parskip}
+\usepackage{pgf}
+\usepackage{qtree}
+\usepackage{stmaryrd}
+\usepackage{verbatim}
+\usepackage{wasysym}  % For the lightning symbol
+\usepackage{wrapfig}
+\usepackage{xcolor}
+
+%%% Default margin
+\usepackage[left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+
+%%% Default indentation
+\setlength{\parindent}{0cm}
+
+%%% Tikz configuration
+\usepackage{tikz}
+\usepackage[framemethod=tikz]{mdframed}
+\usetikzlibrary{arrows, automata, positioning}
+\def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;}
+
+%%% Algorithm display
+\usepackage[ruled,vlined,linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+
+%%% Item symbol
+\AtBeginDocument{\def\labelitemi{$\bullet$}}
+
+
+%%%%%%%%%%%%%
+%%% Fonts %%%
+%%%%%%%%%%%%%
+
+%%% Default Math-Mode font
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+
+
+%%%%%%%%%%%%%%%%%%
+%%% Cover page %%%
+%%%%%%%%%%%%%%%%%%
+%%% Template link :
+%%% http://mirror.jmu.edu/pub/CTAN/info/latex-samples/TitlePages/titlepages.pdf
+%%% Many thanks to Peter Wilson for is work.
+\newlength{\drop}
+\newcommand*{\titleM}{
+    \begingroup % Misericords, T&H p 153
+    \drop = 0.08\textheight
+    \centering
+    \vspace*{\drop}
+
+    %%% Document title
+    {\Huge\bfseries \lectureNotesTitle}\\[\baselineskip]
+
+    %%% Document sub-title, can be repeated
+    {\large\scshape \lectureNotesID}\\[\baselineskip]
+
+    %%% Center text
+    \begin{vplace}[0.8]
+        \textit{\lectureNotesMidTitle}
+    \end{vplace}
+    \begin{vplace}[0.4]
+        \begin{center}
+        \includegraphics[scale=0.15]{res/logo.jpg}
+        \end{center}
+    \end{vplace}
+
+
+    %%% Authors
+    {\scshape \lectureNotesAuthors}\par
+    \vspace*{1\drop}
+    \endgroup
+}
+
+%%% Creating the Cover page and summary
+\newcommand{\beginLectureNotes}{
+    % Cover page
+    \begin{center}
+    \titleM 
+    \end{center}
+    \clearpage
+
+    % Summary
+    \begin{center}
+    \tableofcontents
+    \end{center}
+
+    % First page
+    \newpage
+}
+
+
+%%%%%%%%%%%%%%%%%%%
+%%% Page number %%%
+%%%%%%%%%%%%%%%%%%%
+\let\footruleskip\undefined
+\usepackage{fancyhdr} 
+\fancyhf{}
+\cfoot{\thepage}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Section name format %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{secnumdepth}{50}
+\setcounter{tocdepth}{50}
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+
+
+%%%%%%%%%%%%%%%%%%%%
+%%% Environments %%%
+%%%%%%%%%%%%%%%%%%%%
+
+%%% lstlistings
+\lstset{
+    language=python,
+    backgroundcolor=\color{gray!10},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=true,
+    breaklines=true,
+    commentstyle=\color[HTML]{556b2f},
+    escapeinside={\%*}{*)},
+    extendedchars=true,
+    frame=single,
+    framexbottommargin=2pt,
+    framextopmargin=2pt,
+    inputencoding=utf8,
+    keywordstyle=\color{blue},
+    numbers=none,
+    numberstyle=\footnotesize,
+    rulecolor=\color{black!30},
+    stringstyle=\color{red},
+    tabsize=4,
+    title=\lstname,
+    literate={á}{{\'a}}1 {ã}{{\~a}}1 {é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {À}{{\`A}}1 {à}{{\`a}}1 {â}{{\^a}}1 {'}{{'}}1 {ç}{{\c{c}}}1 {`}{{`}}1
+}
+
+%%% Proof
+\newenvironment{myproof}[1][\proofname]{\proof[#1]\mbox{}\\*}{\endproof}
+
+%%% Questions / Answers (To create a quizz, for example)
+\newenvironment{questions}{\begin{enumerate}[label=$\bullet$]\bfseries}
+                          {\end{enumerate}}
+\newenvironment{answer}{\par\par\par\normalfont}{}
+
+%%
+% Enumerate conditions under an equation.
+%
+% Usage :
+% \begin{conditions}
+%     A & :           & notional permeability factor \\
+%     B & \sim        & number of waves \\
+%     C & \rightarrow & damage level
+% \end{conditions}
+% 
+% Source :
+% https://tex.stackexchange.com/a/225574
+%%
+\newenvironment{conditions}[1][where:]
+  {\begin{minipage}{\textwidth}
+   \vspace*{-.5\belowdisplayskip}%
+   \linespread{1}\selectfont #1 \begin{tabular}[t]{>{$}l<{$} @{${}:{}$} l}}
+  {\end{tabular}\end{minipage}\\[\belowdisplayskip]}
+
+\newenvironment{conditions*}[1][where:]
+  {\begin{minipage}{\textwidth}
+   \vspace*{-.5\belowdisplayskip}%
+   \linespread{1}\selectfont #1 \begin{tabular}[t]{>{$}l<{$} @{}>{${}}c<{{}$}@{} l}}
+  {\end{tabular}\end{minipage}\\[\belowdisplayskip]}
+
+
+%%%%%%%%%%%%%%%%
+%%% Commands %%%
+%%%%%%%%%%%%%%%%
+
+%%% Make tab's cells bold and centered. To use in every header cell
+\newcommand*{\thead}[1]{%
+\multicolumn{1}{c}{\bfseries\begin{tabular}{@{}c@{}}#1\end{tabular}}}
+
+%%% Put annotations under or over an equation
+\newcommand{\overAnnotation}[2]{\overset{\mathclap{\substack{#2\\ \Big\downarrow}}}{#1}}
+\newcommand{\underAnnotation}[2]{\underset{\mathclap{\substack{\Big\uparrow\\ #2}}}{#1}}
+
+%%% Proper mathematic syntax to define a function and its domains
+\newcommand{\functionDefinition}[5]{
+    \begin{align*}
+        #1 \colon #2 & \longrightarrow #3 \\
+                  #4 & \longmapsto #5
+    \end{align*}
+}
+
+%%% Derivative notation
+\newcommand{\derivative}[3]{\frac{\partial^{^{#3}}\! #1}{\partial#2^{^{#3}}}}
+
+%%% Highlight text needing updates
+\newcommand{\TODO}[1]{
+    \textbf{\textcolor{red}{
+        \LARGE{\underline{TODO:}}
+        \url{#1}
+    }}
+    \PackageWarning{TODO:}{#1!}
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Operators & Delimiters %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Argmax and Argmin maths operators 
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+%%% Ceil and Floor delimiters paired
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+
+%%%%%%%%%%%%%%%
+%%% Symbols %%%
+%%%%%%%%%%%%%%%
+
+%%% Independence symbol
+\newcommand{\independent}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
+
+%%% Variance's function symbol
+\newcommand{\Var}{\mathcal{V}\text{ar}}
+
+%%%% Covariance's function symbol
+\newcommand{\Cov}{\mathcal{C}\text{ov}}
+
+%%% Correlation's function symbol
+\newcommand{\Corr}{\mathcal{C}\text{orr}}
+
+%%% Contradiction lighting symbol
+\newcommand{\contradiction}{\lightning}
+
+%%% Slice the page with an horizontal line
+\newcommand{\horizontalLine}{\rule{\linewidth}{0.5mm}}
+
+\endinput
