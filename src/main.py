@@ -1,12 +1,18 @@
-from os.path import join
+from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_COLOR_256, LENA_COLOR_512, LENA_GRAY_256, \
+    LENA_GRAY_512, LIVINGROOM, MANDRIL_COLOR, MANDRIL_GRAY, PEPPERS_COLOR, PEPPERS_GRAY, PIRATE, WALKBRIDGE, \
+    WOMAN_BLONDE, WOMAN_DARKHAIR
+from src.picture_tools.picture import Picture
 
 
 PATH_DIR_USPS = "../res/USPS"
-PATH_DIR_PICTURES = "../res/pictures"
+
+PICTURE_PATH = LENA_GRAY_512
 
 
 def main():
-    pass
+    picture = Picture(PICTURE_PATH)
+    picture.show()
+
 
 
 if __name__ == "__main__":
