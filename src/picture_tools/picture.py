@@ -8,13 +8,13 @@ import random
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import uint8
+from numpy import uint8, float64, int64
 
 from src.picture_tools.codage import Codage, change_codage
 from src.common import normalize
 
 
-VALUE_MISSING_PIXEL = -100
+VALUE_MISSING_PIXEL = np.ones((3,)) * -100
 
 
 class Picture:
@@ -33,15 +33,16 @@ class Picture:
         pixels, self.hauteur, self.largeur = _load_pixels(picture_path)
         self.pixels = change_codage(pixels, Codage.RGB, self.codage)
 
-    def show(self, show=True) -> None:
+    def show(self, show: bool = True) -> None:
         """ Plot l'image sur matplotlib et l'affiche sur demande.
         :param: show, waut `True` si on affiche l'image après l'avoir plottée.
         """
-        picture = change_codage(self.pixels, self.codage, Codage.RGB)
-        print("to RGB", picture.shape, picture.min(), picture.max(), picture.argmin(), picture.argmax())
-        picture = normalize(picture, 0, 255).astype(uint8)
-        print("normalized", picture.shape, picture.min(), picture.max(), picture.argmin(), picture.argmax())
-        print(picture[0, 0])
+        # Remove missing values
+        picture = np.copy(self.pixels)
+        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+
+        picture = change_codage(picture, self.codage, Codage.RGB)
+        picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
         plt.imshow(picture)
         if show:
             plt.show()
@@ -54,8 +55,13 @@ class Picture:
         """
         if picture_path is None:
             picture_path = os.path.basename(self.picture_path)
+
+        # Remove missing values
+        picture = np.copy(self.pixels)
+        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+
         picture = change_codage(self.pixels, self.codage, Codage.RGB)
-        picture = normalize(picture, 0, 255)
+        picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
         plt.imshow(picture)
         plt.savefig(picture_path)
 
@@ -63,10 +69,45 @@ class Picture:
         """ Ajoute aléatoirement du bruit dans l'image.
         :param: threshold, seuil en dessous duquel on bruite le pixel.
         """
+        print(self.pixels.min())
         for x in range(self.largeur):
             for y in range(self.hauteur):
-                self.pixels[x, y] = np.random.randint(low=-1, high=1, size=(3,)) \
-                    if random.random() < threshold else self.pixels[x, y]
+                self.pixels[x, y] = VALUE_MISSING_PIXEL if random.random() < threshold else self.pixels[x, y]
+        print(self.pixels.min())
+
+    def get_pixel(self, x: int, y: int) -> np.ndarray:
+        """ Retourne le pixel de l'image aux indexes (x, y).
+        :param: x, l'index de la colonne.
+        :param: y, l'index de la ligne.
+        :return: Le contenu du pixel demandé.
+        """
+        return self.pixels[x, y]
+
+    def get_patch(self, x: int, y: int, size: int) -> np.ndarray:
+        """ Retourne le patch de l'image centré aux indexes (x, y).
+        :param: x, l'index de la colonne.
+        :param: y, l'index de la ligne.
+        :param: size, la longueur du patch.
+        :return: Le contenu du patch demandé.
+        """
+        return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
+
+
+def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True):
+    """ Plot le patch sur matplotlib et l'affiche sur demande.
+    :param: patch, le patch à afficher.
+    :param: codage, le codage utilisé pour le patch.
+    :param: show, waut `True` si on affiche le patch après l'avoir plottée.
+    """
+    # Remove missing values
+    new_patch = np.copy(patch)
+    new_patch[patch == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+
+    new_patch = change_codage(new_patch, codage, Codage.RGB)
+    new_patch = normalize(new_patch, 0, 255, -1, 1).astype(uint8)
+    plt.imshow(new_patch)
+    if show:
+        plt.show()
 
 
 def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:
@@ -92,8 +133,7 @@ def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:
     image_hauteur, image_largeur, _ = pixels.shape
 
     # Normalisation des pixels dans l'intervalle -1, 1
-    print(pixels[0, 0], pixels.dtype)
-    pixels = normalize(pixels, -1, 1)
+    pixels = normalize(pixels, -1, 1, 0, 255)
 
     return pixels, image_hauteur, image_largeur
 
