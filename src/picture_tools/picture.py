@@ -4,11 +4,14 @@ pouvoir manipuler facilement des images.
 """
 from typing import Tuple
 import os.path
+import random
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import uint8
 
 from src.picture_tools.codage import Codage, change_codage
+from src.common import normalize
 
 
 VALUE_MISSING_PIXEL = -100
@@ -19,7 +22,8 @@ class Picture:
     Attributs :
         - picture_path : str, le chemin vers l'image.
         - codage : Codage, le codage des pixels de l'image (par défaut, HSV).
-        - pixels : np.ndarray, les pixels (le contenu) de l'image.
+        - pixels : np.ndarray, les pixels (le contenu) de l'image. Quel que soit le codage de l'image, les valeurs des
+        pixels sont normalisées entre -1 et 1.
         - hauteur : int, la hauteur de l'image.
         - largeur : int, la largeur de l'image.
     """
@@ -33,7 +37,11 @@ class Picture:
         """ Plot l'image sur matplotlib et l'affiche sur demande.
         :param: show, waut `True` si on affiche l'image après l'avoir plottée.
         """
-        picture = _pixels_to_picture(self.pixels, self.hauteur, self.largeur)
+        picture = change_codage(self.pixels, self.codage, Codage.RGB)
+        print("to RGB", picture.shape, picture.min(), picture.max(), picture.argmin(), picture.argmax())
+        picture = normalize(picture, 0, 255).astype(uint8)
+        print("normalized", picture.shape, picture.min(), picture.max(), picture.argmin(), picture.argmax())
+        print(picture[0, 0])
         plt.imshow(picture)
         if show:
             plt.show()
@@ -46,9 +54,19 @@ class Picture:
         """
         if picture_path is None:
             picture_path = os.path.basename(self.picture_path)
-        image = _pixels_to_picture(self.pixels, self.hauteur, self.largeur)
-        plt.imshow(image)
+        picture = change_codage(self.pixels, self.codage, Codage.RGB)
+        picture = normalize(picture, 0, 255)
+        plt.imshow(picture)
         plt.savefig(picture_path)
+
+    def add_noise(self, threshold: float = 0.2):
+        """ Ajoute aléatoirement du bruit dans l'image.
+        :param: threshold, seuil en dessous duquel on bruite le pixel.
+        """
+        for x in range(self.largeur):
+            for y in range(self.hauteur):
+                self.pixels[x, y] = np.random.randint(low=-1, high=1, size=(3,)) \
+                    if random.random() < threshold else self.pixels[x, y]
 
 
 def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:
@@ -62,38 +80,22 @@ def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:
     picture = plt.imread(picture_path)
 
     if len(picture.shape) == 3:
-        # L'image comporte trois composantes : RGBK
-        # Elle est donc en couleurs.K
+        # L'image comporte trois composantes : RGB
+        # Elle est donc en couleurs.
         # Elle peut contenir une composante Alpha, mais elle sera ignorée.
-        picture = picture[:, :, :3]
+        pixels = picture[:, :, :3]
     else:
         # L'image comporte une seule composante : l'intensité des pixels.
-        # Elle est donc en noir et blanc. On la converti au format RGB.
-        picture = np.dstack([picture] * 3)
+        # Elle est donc en noir et blanc. On la convertie au format RGB.
+        pixels = np.dstack([picture] * 3)
 
-    # Transformation en matrice `n * 3`, avec `n` le nombre de pixels
-    image_hauteur, image_largeur, _ = picture.shape
-    pixels = _picture_to_pixels(picture, image_hauteur, image_largeur)
+    image_hauteur, image_largeur, _ = pixels.shape
+
+    # Normalisation des pixels dans l'intervalle -1, 1
+    print(pixels[0, 0], pixels.dtype)
+    pixels = normalize(pixels, -1, 1)
 
     return pixels, image_hauteur, image_largeur
-
-
-def _picture_to_pixels(picture: np.ndarray, image_hauteur: int, image_largeur: int) -> np.ndarray:
-    """ Récupère les pixels d'une image dans un format plus facilement utilisable.
-    :param: image, l'image chargée par matplotlib.
-    :param: image_hauteur, la hauteur de l'image.
-    :param: image_largeur, la largeur de l'image.
-    """
-    return picture.reshape((image_hauteur * image_largeur, 3))
-
-
-def _pixels_to_picture(pixels: np.ndarray, image_hauteur: int, image_largeur: int) -> np.ndarray:
-    """ Récupère les pixels d'une image dans un format plus facilement utilisable.
-    :param: pixels, Les pixels de l'image chargée par matplotlib.
-    :param: image_hauteur, la hauteur de l'image.
-    :param: image_largeur, la largeur de l'image.
-    """
-    return pixels.reshape((image_hauteur, image_largeur , 3))
 
 
 if __name__ == "__main__":

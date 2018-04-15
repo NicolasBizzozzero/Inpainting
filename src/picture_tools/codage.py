@@ -4,14 +4,16 @@ vers un autre.
 """
 
 from enum import IntEnum
+import colorsys
 
 import numpy as np
 
+from src.common import normalize
+
 
 class Codage(IntEnum):
-    NOIR_ET_BLANC = 0
-    RGB = 1
-    HSV = 2
+    RGB = 0
+    HSV = 1
 
 
 class UnknownCodage(Exception):
@@ -26,24 +28,13 @@ def change_codage(pixels: np.ndarray, codage_src: Codage, codage_dest: Codage) -
     :param: codage_dest, le codage dans lequel on veut convertir nos pixels.
     :return: Les pixels encodés dans e codage `codage_dest`.
     """
-    if codage_src == Codage.NOIR_ET_BLANC:
-        if codage_dest == Codage.NOIR_ET_BLANC:
-            return pixels
-        elif codage_dest == Codage.RGB:
-            return _black_and_white_to_rgb(pixels)
-        elif codage_dest == Codage.HSV:
-            return _black_and_white_to_hsv(pixels)
-    elif codage_src == Codage.RGB:
-        if codage_dest == Codage.NOIR_ET_BLANC:
-            return _rgb_to_black_and_white(pixels)
-        elif codage_dest == Codage.RGB:
+    if codage_src == Codage.RGB:
+        if codage_dest == Codage.RGB:
             return pixels
         elif codage_dest == Codage.HSV:
             return _rgb_to_hsv(pixels)
     elif codage_src == Codage.HSV:
-        if codage_dest == Codage.NOIR_ET_BLANC:
-            return _hsv_to_black_and_white(pixels)
-        elif codage_dest == Codage.RGB:
+        if codage_dest == Codage.RGB:
             return _hsv_to_rgb(pixels)
         elif codage_dest == Codage.HSV:
             return pixels
@@ -51,28 +42,32 @@ def change_codage(pixels: np.ndarray, codage_src: Codage, codage_dest: Codage) -
         raise UnknownCodage(codage_dest)
 
 
-def _black_and_white_to_rgb(pixels: np.ndarray) -> np.ndarray:
-    pass
-
-
-def _black_and_white_to_hsv(pixels: np.ndarray) -> np.ndarray:
-    pass
-
-
 def _rgb_to_hsv(pixels: np.ndarray) -> np.ndarray:
-    pass
+    # The colorsys function uses values normalized between 0 and 1
+    pixels = normalize(pixels, 0, 1)
 
+    for x in range(pixels.shape[0]):
+        for y in range(pixels.shape[1]):
+            pixels[x, y] = colorsys.rgb_to_hsv(*pixels[x, y])
 
-def _rgb_to_black_and_white(pixels: np.ndarray) -> np.ndarray:
-    pass
+    # Get back to the original -1, 1 normalisation
+    pixels = normalize(pixels, -1, 1)
+
+    return pixels
 
 
 def _hsv_to_rgb(pixels: np.ndarray) -> np.ndarray:
-    pass
+    # The colorsys function uses values normalized between 0 and 1
+    pixels = normalize(pixels, 0, 1)
 
+    for x in range(pixels.shape[0]):
+        for y in range(pixels.shape[1]):
+            pixels[x, y] = colorsys.hsv_to_rgb(*pixels[x, y])
 
-def _hsv_to_black_and_white(pixels: np.ndarray) -> np.ndarray:
-    pass
+    # Get back to the original -1, 1 normalisation
+    pixels = normalize(pixels, -1, 1)
+
+    return pixels
 
 
 if __name__ == "__main__":
