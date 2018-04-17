@@ -7,7 +7,7 @@ import enum
 
 import numpy as np
 
-from src.linear.cost_function import hinge, hinge_g, hinge_penality, hinge_penality_g, mse, mse_g
+from src.linear.cost_function import mse, mse_g
 from src.linear.projection import gaussienne, identite, polynomiale
 from src.linear.gradient_descent import DescenteDeGradient, gradient_descent, gradient_descent_h
 
@@ -26,7 +26,7 @@ class UnknownInitialisation(Exception):
 
 
 class LinearRegression:
-    def __init__(self, loss=hinge, loss_g=hinge_g, max_iter=10000, eps=0.01, biais=True, activation=np.sign,
+    def __init__(self, loss=mse, loss_g=mse_g, max_iter=10000, eps=0.01, biais=True, activation=np.sign,
                  type_descente=DescenteDeGradient.MINI_BATCH, taille_batch=50, initialisation=Initialisation.RANDOM,
                  projection=identite):
         """ :loss: fonction de cout

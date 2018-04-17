@@ -6,6 +6,54 @@
 \beginLectureNotes
 
 \newpage
+\section{Préambule : Régression linéaire, régression ridge et LASSO}
+\subsection{Calculs préliminaires}
+Soient $f_w$ la fonction de prédiction et $\hat{y}$ l'ensemble des vrais labels de la base d'apprentissage.
+
+
+\subsubsection{Régularisation L2}
+On souhaite minimiser la fonction de coût suivante :
+\begin{equation*}
+L_2(w) = \frac{1}{2N} \sum_{i=1}^{N}{\big(\hat{y_i} - f_w(x_i)\big)^2} + \alpha||w||_2^2
+\end{equation*}
+
+On va donc l'optimiser par descente de gradient, en utilisant le gradient suivant :
+\begin{equation*}
+\derivative{L_2}{w}{} = \frac{1}{N} \sum_{i=1}^{N}{\big(\hat{y_i} - f_w(x_i)\big)x_i} + 2\alpha w
+\end{equation*}
+
+
+\subsubsection{Régularisation L1}
+On souhaite minimiser la fonction de coût suivante :
+\begin{equation*}
+L_1(w) = \frac{1}{2N} \sum_{i=1}^{N}{\big(\hat{y_i} - f_w(x_i)\big)^2} + \alpha||w||_1
+\end{equation*}
+
+On va donc l'optimiser par descente de gradient, en utilisant le gradient suivant :
+\begin{equation*}
+\derivative{L_1}{w}{} = \frac{1}{N} \sum_{i=1}^{N}{\big(\hat{y_i} - f_w(x_i)\big)x_i} + \alpha \cdot sign(w)
+\end{equation*}
+
+
+\subsection{Description du protocole}
+La base de données \textbf{USPS} étant déjà séparée en une base d'apprentissage et une base de test, nous pouvons facilement calculer le score obtenu sur cette même base de test. Nous proposons de comparer les résultats obtenus en classifiant \textbf{chaque classe contre chaque autre} dans un premier temps, puis dans du \textbf{1 contre tous} par la suite. Enfin, nous étudierons l'apparence du vecteur de poids obtenu par chaque classifieur.
+
+
+\subsection{Processus d'évaluation}
+\subsubsection{Classe contre classe}
+
+
+\subsubsection{1 contre tous}
+
+
+
+\subsubsection{Vecteur de poids}
+
+
+
+\newpage
+\section{LASSO et Inpainting}
+
 
 
 \end{document}

@@ -11,6 +11,8 @@ dimensions d'entrées.
 
 import numpy as np
 
+from src.common import norme_1, norme_2
+
 
 def _decorator_vec(fonc):
     def vecfonc(datax, datay, w, *args, **kwargs):
@@ -28,7 +30,7 @@ def mse(datax, datay, w):
     prediction = np.dot(datax, w.T)
     real_labels = datay
     squared_error = np.power(prediction - real_labels, 2)
-    return np.mean(squared_error) * 2  # Pour dériver plus facilement
+    return np.mean(squared_error) * (1 / 2)  # Pour dériver plus facilement
 
 
 @_decorator_vec
@@ -38,6 +40,29 @@ def mse_g(datax, datay, w):
     real_labels = datay
     gradient_squared_error = (prediction - real_labels) * datax
     return np.mean(gradient_squared_error)
+
+
+@_decorator_vec
+def l1(datax, datay, w, alpha):
+    """ Retourne l'erreur de la régularisation L1. """
+    return mse(datax, datay, w) + (alpha * norme_1(w))
+
+
+@_decorator_vec
+def l1_g(datax, datay, w, alpha):
+    """ Retourne le gradient de l'erreur de la régularisation L1. """
+    return mse_g(datax, datay, w) + (alpha * np.sign(w))
+
+@_decorator_vec
+def l2(datax, datay, w, alpha):
+    """ Retourne l'erreur de la régularisation L2. """
+    return mse(datax, datay, w) + (alpha * norme_2(w))
+
+
+@_decorator_vec
+def l2_g(datax, datay, w, alpha):
+    """ Retourne le gradient de l'erreur de la régularisation L2. """
+    return mse(datax, datay, w) + (2 * alpha * w)
 
 
 @_decorator_vec
