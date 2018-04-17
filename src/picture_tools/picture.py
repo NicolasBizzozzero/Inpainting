@@ -2,13 +2,13 @@
 """ Ce module contient toutes les méthodes et fonctions nécessaires pour
 pouvoir manipuler facilement des images.
 """
-from typing import Tuple
+from typing import Tuple, List
 import os.path
 import random
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import uint8, float64, int64
+from numpy import uint8
 
 from src.picture_tools.codage import Codage, change_codage
 from src.common import normalize
@@ -18,15 +18,18 @@ VALUE_MISSING_PIXEL = np.ones((3,)) * -100
 
 
 class Picture:
-    """ Permet de manipuler très facilement une image tout en supportant plusieurs encodages.
+    """ Permet de manipuler très facilement une image tout en supportant
+    plusieurs encodages.
     Attributs :
         - picture_path : str, le chemin vers l'image.
         - codage : Codage, le codage des pixels de l'image (par défaut, HSV).
-        - pixels : np.ndarray, les pixels (le contenu) de l'image. Quel que soit le codage de l'image, les valeurs des
-        pixels sont normalisées entre -1 et 1.
+        - pixels : np.ndarray, les pixels (le contenu) de l'image. Quel que
+        soit le codage de l'image, les valeurs des pixels sont normalisées
+        entre -1 et 1.
         - hauteur : int, la hauteur de l'image.
         - largeur : int, la largeur de l'image.
     """
+
     def __init__(self, picture_path: str, codage: Codage = Codage.HSV):
         self.picture_path = picture_path
         self.codage = codage
@@ -39,7 +42,8 @@ class Picture:
         """
         # Remove missing values
         picture = np.copy(self.pixels)
-        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(
+            low=-1, high=1)
 
         picture = change_codage(picture, self.codage, Codage.RGB)
         picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
@@ -58,22 +62,31 @@ class Picture:
 
         # Remove missing values
         picture = np.copy(self.pixels)
-        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(
+            low=-1, high=1)
 
         picture = change_codage(self.pixels, self.codage, Codage.RGB)
         picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
         plt.imshow(picture)
         plt.savefig(picture_path)
 
-    def add_noise(self, threshold: float = 0.2):
+    def add_noise(self, threshold: float = 0.05):
         """ Ajoute aléatoirement du bruit dans l'image.
         :param: threshold, seuil en dessous duquel on bruite le pixel.
         """
-        print(self.pixels.min())
         for x in range(self.largeur):
             for y in range(self.hauteur):
-                self.pixels[x, y] = VALUE_MISSING_PIXEL if random.random() < threshold else self.pixels[x, y]
-        print(self.pixels.min())
+                self.pixels[x, y] = VALUE_MISSING_PIXEL if random.random(
+                ) < threshold else self.pixels[x, y]
+
+    def add_rectangle(self, x: int, y: int, hauteur: int, largeur: int) -> None:
+        """ Ajoute aléatoirement un rectangle de bruit dans l'image.
+        :param: x, Le pixel d'abscisse x du coint haut gauche du rectangle
+        :param: y, Le pixel d'ordonnée y du coint haut gauche du rectangle
+        :param: hauteur, La hauteur du rectangle
+        :param: largeur, La largeur du rectangle
+        """
+        self.pixels[x:x + hauteur, y:y + largeur] = VALUE_MISSING_PIXEL
 
     def get_pixel(self, x: int, y: int) -> np.ndarray:
         """ Retourne le pixel de l'image aux indexes (x, y).
@@ -91,6 +104,38 @@ class Picture:
         :return: Le contenu du patch demandé.
         """
         return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
+
+    def get_patches(self, size: int, step: int = 1, min_missing_pixel: int = 1) -> List[np.ndarray]:
+        """ Retourne tous les patches de l'image contenant des pixels manquants.
+        :param: size, la taille de chaque patch.
+        :param: step, la taille du pas d'itération.
+        :param: min_missing_pixel, le nombre de pixels manquants à prendre en compte pour retourner ce patch.
+        :return: Une list de patchs contenant des pixels manquants.
+        """
+        result = []
+        for x in range(0, self.largeur, step):
+            for y in range(0, self.hauteur, step):
+                patch = self.get_patch(x, y, size)
+                if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 >= min_missing_pixel:
+                    result.append(patch)
+        return result
+
+    def get_dictionnaire(self, size: int, step: int = 1, max_missing_pixel: int = 0) -> List[np.ndarray]:
+        """ Retourne tous les patches de l'image ne contenant pas de pixels manquants.
+        :param: size, la taille de chaque patch.
+        :param: step, la taille du pas d'itération.
+        :param: max_missing_pixel, le nombre de pixels manquants à prendre en compte pour retourner ce patch.
+        :return: Une list de patchs ne contenant pas de pixels manquants.
+        """
+        result = []
+        for x in range(0, self.largeur, step):
+            for y in range(0, self.hauteur, step):
+                patch = self.get_patch(x, y, size)
+                if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 <= max_missing_pixel:
+                    # Prevent out of bound patches to be returned
+                    if 0 not in patch.shape:
+                        result.append(patch)
+        return result
 
 
 def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True):

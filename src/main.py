@@ -7,17 +7,30 @@ from src.picture_tools.picture import Picture, show_patch
 
 PATH_DIR_USPS = "../res/USPS"
 
-PATCH_SIZE = 201
+PATCH_SIZE = 50
+STEP = PATCH_SIZE
 PICTURE_PATH = LENA_COLOR_512
 CODAGE = Codage.RGB
 
 
 def main():
+    # Chargement de l'image
     picture = Picture(PICTURE_PATH, codage=CODAGE)
-    picture.add_noise()
-    # picture.show()
-    patch = picture.get_patch(122, 122, PATCH_SIZE)
-    show_patch(patch, codage=CODAGE)
+    picture.show()
+
+    # Ajout du bruit
+    picture.add_rectangle(45, 45, 50, 80)
+    picture.add_noise(0.0001)
+    picture.show()
+
+    # Récuperation des patchs et du dictionnaire
+    patches = picture.get_patches(size=PATCH_SIZE, step=STEP)
+    dictionnaire = picture.get_dictionnaire(size=PATCH_SIZE, step=STEP)
+
+    print("Affichage d'un patch avec pixels manquant")
+    show_patch(patches[0], codage=CODAGE)
+    print("Affichage d'un patch sans pixel manquant")
+    show_patch(dictionnaire[0], codage=CODAGE)
 
 
 if __name__ == "__main__":
