@@ -27,5 +27,21 @@ def normalize(array: np.ndarray, floor: Number = 0, ceil: Number = 1, origin_flo
     return upper * array + lower
 
 
+def norme_1(w: np.ndarray) -> Number:
+    """ Calcule la norme 1 d'un vecteur.
+    :param w: Le vecteur dont on veut calculer la norme.
+    :return: La valeur de la norme 1 de `w`.
+    """
+    return sum([np.abs(w_i) for w_i in w])
+
+
+def norme_2(w: np.ndarray) -> Number:
+    """ Calcule la norme 2 d'un vecteur.
+    :param w: Le vecteur dont on veut calculer la norme.
+    :return: La valeur de la norme 2 de `w`.
+    """
+    return np.sqrt(sum([np.power(w_i, 2) for w_i in w]))
+
+
 if __name__ == "__main__":
     pass
