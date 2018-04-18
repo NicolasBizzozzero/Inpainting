@@ -7,8 +7,6 @@ dans ce plus grand espace.
 
 import numpy as np
 
-from data_generation import make_grid
-
 
 def identite(datax):
     """ Retourne les données en elles-mêmes. Sert de projection par défaut. """

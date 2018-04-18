@@ -43,5 +43,24 @@ def norme_2(w: np.ndarray) -> Number:
     return np.sqrt(sum([np.power(w_i, 2) for w_i in w]))
 
 
+def make_grid(data=None, xmin=-5, xmax=5, ymin=-5, ymax=5, step=20):
+    """ Cree une grille sous forme de matrice 2d de la liste des points
+    :param data: pour calcluler les bornes du graphe
+    :param xmin: si pas data, alors bornes du graphe
+    :param xmax:
+    :param ymin:
+    :param ymax:
+    :param step: pas de la grille
+    :return: une matrice 2d contenant les points de la grille
+    """
+    if data is not None:
+        xmax, xmin, ymax, ymin = np.max(data[:, 0]), np.min(
+            data[:, 0]), np.max(data[:, 1]), np.min(data[:, 1])
+    x, y = np.meshgrid(np.arange(xmin, xmax, (xmax - xmin) * 1. / step),
+                       np.arange(ymin, ymax, (ymax - ymin) * 1. / step))
+    grid = np.c_[x.ravel(), y.ravel()]
+    return grid, x, y
+
+
 if __name__ == "__main__":
     pass

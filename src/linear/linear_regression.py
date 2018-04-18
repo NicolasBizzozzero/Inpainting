@@ -7,7 +7,7 @@ import enum
 
 import numpy as np
 
-from src.linear.cost_function import mse, mse_g
+from src.linear.cost_function import mse, mse_g, l1, l1_g, l2, l2_g
 from src.linear.projection import gaussienne, identite, polynomiale
 from src.linear.gradient_descent import DescenteDeGradient, gradient_descent, gradient_descent_h
 
@@ -28,7 +28,7 @@ class UnknownInitialisation(Exception):
 class LinearRegression:
     def __init__(self, loss=mse, loss_g=mse_g, max_iter=10000, eps=0.01, biais=True, activation=np.sign,
                  type_descente=DescenteDeGradient.MINI_BATCH, taille_batch=50, initialisation=Initialisation.RANDOM,
-                 projection=identite):
+                 projection=identite, alpha=None):
         """ :loss: fonction de cout
             :loss_g: gradient de la fonction de cout
             :max_iter: nombre d'iterations
@@ -43,6 +43,7 @@ class LinearRegression:
                              poids.
             :projection: Fonction de projection des données dans un espace de
                          dimension supérieure.
+            :alpha: Valeur de régularisation pour une fonction de coût
         """
         self.max_iter = max_iter
         self.eps = eps
@@ -54,6 +55,7 @@ class LinearRegression:
         self.taille_batch = taille_batch
         self.initialisation = initialisation
         self.projection = projection
+        self.alpha = alpha
 
     def fit(self, datax, datay):
         """ :datax: donnees de train
@@ -81,7 +83,8 @@ class LinearRegression:
                                   loss_g=self.loss_g,
                                   max_iter=self.max_iter,
                                   pas=self.eps,
-                                  batch_size=self.taille_batch)
+                                  batch_size=self.taille_batch,
+                                  alpha=self.alpha)
 
     def fit_h(self, datax, datay):
         """ Apprends le perceptron tout en gardant en mémoire l'historique de

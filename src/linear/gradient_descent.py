@@ -22,7 +22,8 @@ class UnknownDescenteDeGradient(Exception):
 
 
 def gradient_descent(datax, datay, type_descente, w_init, loss_g,
-                     max_iter=10000, pas=0.01, batch_size=None):
+                     max_iter=10000, pas=0.01, batch_size=None,
+                     **kwaargs):
     """ Effectue une descente de gradient pour optimiser la valeur d'un
     vecteur de poids d'un perceptron.
     :param: datax, L'ensemble de données d'apprentissage.
@@ -38,7 +39,7 @@ def gradient_descent(datax, datay, type_descente, w_init, loss_g,
     :return: w, La valeur optimale de la fonction.
     """
     if type_descente == DescenteDeGradient.BATCH:
-        return batch(datax, datay, w_init, max_iter, pas, loss_g)
+        return batch(datax, datay, w_init, max_iter, pas, loss_g, **kwaargs)
     elif type_descente == DescenteDeGradient.MINI_BATCH:
         return mini_batch(datax, datay, w_init, max_iter, pas, loss_g,
                           batch_size)
@@ -48,14 +49,14 @@ def gradient_descent(datax, datay, type_descente, w_init, loss_g,
         raise UnknownDescenteDeGradient(type_descente)
 
 
-def batch(datax, datay, w_init, max_iter, pas, loss_g):
+def batch(datax, datay, w_init, max_iter, pas, loss_g, **kwaargs):
     """ Effectue une descente de gradient de type batch (par lot).
     Une descente de gradient de type batch calcule, à chaque itération, le
     gradient sur toutes les données.
     """
     w = w_init
     for _ in range(max_iter):
-        w = w - pas * loss_g(datax, datay, w)
+        w = w - pas * loss_g(datax, datay, w, **kwaargs)
     return w
 
 

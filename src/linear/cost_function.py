@@ -10,11 +10,13 @@ dimensions d'entrées.
 """
 
 import numpy as np
+from functools import wraps
 
 from src.common import norme_1, norme_2
 
 
 def _decorator_vec(fonc):
+    @wraps(fonc)
     def vecfonc(datax, datay, w, *args, **kwargs):
         if not hasattr(datay, "__len__"):
             datay = np.array([datay])
@@ -27,16 +29,16 @@ def _decorator_vec(fonc):
 @_decorator_vec
 def mse(datax, datay, w):
     """ Retourne la moyenne de l'erreur aux moindres carres """
-    prediction = np.dot(datax, w.T)
+    prediction = np.sign(np.dot(datax, w.T))
     real_labels = datay
     squared_error = np.power(prediction - real_labels, 2)
     return np.mean(squared_error) * (1 / 2)  # Pour dériver plus facilement
 
 
 @_decorator_vec
-def mse_g(datax, datay, w):
+def mse_g(datax, datay, w, alpha=None):
     """ Retourne le gradient de l'erreur au moindres carres """
-    prediction = np.dot(datax, w.T)
+    prediction = np.sign(np.dot(datax, w.T))
     real_labels = datay
     gradient_squared_error = (prediction - real_labels) * datax
     return np.mean(gradient_squared_error)
@@ -53,6 +55,7 @@ def l1_g(datax, datay, w, alpha):
     """ Retourne le gradient de l'erreur de la régularisation L1. """
     return mse_g(datax, datay, w) + (alpha * np.sign(w))
 
+
 @_decorator_vec
 def l2(datax, datay, w, alpha):
     """ Retourne l'erreur de la régularisation L2. """
@@ -62,7 +65,7 @@ def l2(datax, datay, w, alpha):
 @_decorator_vec
 def l2_g(datax, datay, w, alpha):
     """ Retourne le gradient de l'erreur de la régularisation L2. """
-    return mse(datax, datay, w) + (2 * alpha * w)
+    return mse_g(datax, datay, w) + (2 * alpha * w)
 
 
 @_decorator_vec
@@ -78,12 +81,12 @@ def hinge(datax, datay, w, alpha=0):
 def hinge_g(datax, datay, w, alpha=0, activation=np.sign):
     """ Retourne le gradient de l'erreur hinge """
     cost = -activation(hinge(datax, datay, w, alpha)) * datax * datay
-    return (np.sum(cost, axis=0) / len(datax))  # Normalisation
+    return np.sum(cost, axis=0) / len(datax)  # Normalisation
 
 
 @_decorator_vec
 def hinge_penality(datax, datay, w, alpha=0, lbda=1):
-    return hinge(datax, datay, w, alpha=0) + \
+    return hinge(datax, datay, w, alpha=alpha) + \
         lbda * np.power(np.linalg.norm(w), 2)
 
 
@@ -91,7 +94,7 @@ def hinge_penality(datax, datay, w, alpha=0, lbda=1):
 def hinge_penality_g(datax, datay, w, alpha=0, lbda=1, activation=np.sign):
     cost = -activation(hinge_penality(datax, datay, w, alpha, lbda)) * datax * datay + \
         2 * lbda * w
-    return (np.sum(cost, axis=0) / len(datax))  # Normalisation
+    return np.sum(cost, axis=0) / len(datax)  # Normalisation
 
 
 if __name__ == '__main__':

@@ -3,9 +3,9 @@ from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_CO
     WOMAN_BLONDE, WOMAN_DARKHAIR
 from src.picture_tools.codage import Codage
 from src.picture_tools.picture import Picture, show_patch
+from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
+from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
 
-
-PATH_DIR_USPS = "../res/USPS"
 
 PATCH_SIZE = 50
 STEP = PATCH_SIZE
@@ -33,5 +33,38 @@ def main():
     show_patch(dictionnaire[0], codage=CODAGE)
 
 
+def main_all_vs_all():
+    print("TEST ALL VS ALL")
+    print("MSE")
+    test_all_usps(classifieur=LinearRegression,
+                  loss_g=mse_g,
+                  type_descente=DescenteDeGradient.BATCH,
+                  alpha=0)
+    for loss_g in (l2_g, l1_g):
+        for alpha in (0, 0.25, 0.5, 0.75, 1):
+            print(loss_g.__name__, "alpha=" + str(alpha))
+            test_all_usps(classifieur=LinearRegression,
+                          loss_g=loss_g,
+                          type_descente=DescenteDeGradient.BATCH,
+                          alpha=alpha)
+
+
+def main_1_vs_all():
+    print("TEST 1 VS ALL")
+    print("MSE")
+    test_all_usps_1_vs_all(classifieur=LinearRegression,
+                           loss_g=mse_g,
+                           type_descente=DescenteDeGradient.BATCH,
+                           alpha=0)
+    for loss_g in (l1_g, l2_g):
+        for alpha in (0, 0.25, 0.5, 0.75, 1):
+            print(loss_g.__name__, "alpha=" + str(alpha))
+            test_all_usps_1_vs_all(classifieur=LinearRegression,
+                                   loss_g=loss_g,
+                                   type_descente=DescenteDeGradient.BATCH,
+                                   alpha=alpha)
+
+
 if __name__ == "__main__":
-    main()
+    main_all_vs_all()
+    main_1_vs_all()
