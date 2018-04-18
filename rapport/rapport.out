@@ -1,0 +1,11 @@
+\BOOKMARK [0][-]{section*.1}{Table des mati\350res}{}% 1
+\BOOKMARK [1][-]{section.0.1}{Pr\351ambule : R\351gression lin\351aire, r\351gression ridge et LASSO}{section*.1}% 2
+\BOOKMARK [2][-]{subsection.0.1.1}{Calculs pr\351liminaires}{section.0.1}% 3
+\BOOKMARK [3][-]{subsubsection.0.1.1.1}{R\351gularisation L2}{subsection.0.1.1}% 4
+\BOOKMARK [3][-]{subsubsection.0.1.1.2}{R\351gularisation L1}{subsection.0.1.1}% 5
+\BOOKMARK [2][-]{subsection.0.1.2}{Description du protocole}{section.0.1}% 6
+\BOOKMARK [2][-]{subsection.0.1.3}{Processus d'\351valuation}{section.0.1}% 7
+\BOOKMARK [3][-]{subsubsection.0.1.3.1}{Classe contre classe}{subsection.0.1.3}% 8
+\BOOKMARK [3][-]{subsubsection.0.1.3.2}{1 contre tous}{subsection.0.1.3}% 9
+\BOOKMARK [3][-]{subsubsection.0.1.3.3}{Vecteur de poids}{subsection.0.1.3}% 10
+\BOOKMARK [1][-]{section.0.2}{LASSO et Inpainting}{section*.1}% 11
