@@ -102,7 +102,7 @@ class LinearRegression:
             datax = np.c_[datax, np.ones(len(datax))]
 
         # Initialisation du vecteur de poids
-        self._init_w(taille=datax.shape[1])
+        self.w = self._init_w(taille=datax.shape[1])
 
         # Optimisation du vecteur de poids
         w_histo, f_histo, grad_histo = gradient_descent_h(datax, datay,
@@ -131,12 +131,12 @@ class LinearRegression:
         return np.array([np.equal(self.predict(x), y)
                          for x, y in zip(datax, datay)]).sum() / len(datax)
 
-    def _init_w(self, taille):
+    def _init_w(self, taille) -> np.ndarray:
         """ Initialise le vecteur w selon une stratégie spécifique. """
         if self.initialisation == Initialisation.ZERO:
-            self.w = np.zeros((1, taille))
+            return np.zeros((1, taille))
         elif self.initialisation == Initialisation.RANDOM:
-            self.w = np.random.random((1, taille))
+            return np.random.random((1, taille))
         else:
             raise UnknownInitialisation(self.initialisation)
 

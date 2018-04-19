@@ -36,10 +36,10 @@ def main():
 def main_all_vs_all():
     print("TEST ALL VS ALL")
     print("MSE")
-    test_all_usps(classifieur=LinearRegression,
-                  loss_g=mse_g,
-                  type_descente=DescenteDeGradient.BATCH,
-                  alpha=0)
+    # test_all_usps(classifieur=LinearRegression,
+    #               loss_g=mse_g,
+    #               type_descente=DescenteDeGradient.BATCH,
+    #               alpha=0)
     for loss_g in (l2_g, l1_g):
         for alpha in (0, 0.25, 0.5, 0.75, 1):
             print(loss_g.__name__, "alpha=" + str(alpha))

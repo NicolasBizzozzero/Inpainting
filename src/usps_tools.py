@@ -27,9 +27,10 @@ def test_all_usps_1_vs_all(classifieur, **kwaargs):
     results = np.array(results).reshape((1, 10))
     print(results)
     fig, ax = plt.subplots(figsize=(4, 2))
-    sns.heatmap(results, ax=ax)
+    sns.heatmap(results, ax=ax, vmin=0.0, vmax=1.0)
     plt.yticks([], [])
     plt.savefig("1_vs_all_" + kwaargs["loss_g"].__name__ + "_" + str(kwaargs["alpha"]) + ".png")
+    plt.close("all")
     # plt.show()
 
 
@@ -54,9 +55,10 @@ def test_all_usps(classifieur, **kwaargs):
             print("W :", clf.w)
             print("nb 0 :", len(clf.w[clf.w == 0]))
             print("___")
-    sns.heatmap(results)
+    sns.heatmap(results, vmin=0.0, vmax=1.0)
     # plt.show()
     plt.savefig("all_vs_all_" + kwaargs["loss_g"].__name__ + "_" + str(kwaargs["alpha"]) + ".png")
+    plt.close("all")
 
 
 def test_usps(class_neg, class_pos, classifieur):
