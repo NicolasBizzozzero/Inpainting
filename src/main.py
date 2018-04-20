@@ -2,12 +2,14 @@ from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_CO
     LENA_GRAY_512, LIVINGROOM, MANDRIL_COLOR, MANDRIL_GRAY, PEPPERS_COLOR, PEPPERS_GRAY, PIRATE, WALKBRIDGE, \
     WOMAN_BLONDE, WOMAN_DARKHAIR
 from src.picture_tools.codage import Codage
-from src.picture_tools.picture import Picture, show_patch
+from src.picture_tools.picture import Picture
+from src.picture_tools.tools import show_patch
 from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
 from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
+from src.inpainting import InPainting
 
 
-PATCH_SIZE = 50
+PATCH_SIZE = 5
 STEP = PATCH_SIZE
 PICTURE_PATH = LENA_COLOR_512
 CODAGE = Codage.RGB
@@ -23,14 +25,10 @@ def main():
     picture.add_noise(0.0001)
     picture.show()
 
-    # Récuperation des patchs et du dictionnaire
-    patches = picture.get_patches(size=PATCH_SIZE, step=STEP)
-    dictionnaire = picture.get_dictionnaire(size=PATCH_SIZE, step=STEP)
-
-    print("Affichage d'un patch avec pixels manquant")
-    show_patch(patches[0], codage=CODAGE)
-    print("Affichage d'un patch sans pixel manquant")
-    show_patch(dictionnaire[0], codage=CODAGE)
+    # On inpaint l'image !
+    inpainting = InPainting(PATCH_SIZE)
+    inpainting.inpaint(picture)
+    picture.show()
 
 
 def main_all_vs_all():
@@ -66,5 +64,4 @@ def main_1_vs_all():
 
 
 if __name__ == "__main__":
-    main_all_vs_all()
-    main_1_vs_all()
+    main()

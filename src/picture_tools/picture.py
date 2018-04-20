@@ -5,6 +5,7 @@ pouvoir manipuler facilement des images.
 from typing import Tuple, List
 import os.path
 import random
+from copy import deepcopy
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -105,7 +106,7 @@ class Picture:
         """
         return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
 
-    def get_patches(self, size: int, step: int = 1, min_missing_pixel: int = 1) -> List[np.ndarray]:
+    def get_patches(self, size: int, step: int = 1, min_missing_pixel: int = 1) -> np.ndarray:
         """ Retourne tous les patches de l'image contenant des pixels manquants.
         :param: size, la taille de chaque patch.
         :param: step, la taille du pas d'itération.
@@ -118,9 +119,9 @@ class Picture:
                 patch = self.get_patch(x, y, size)
                 if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 >= min_missing_pixel:
                     result.append(patch)
-        return result
+        return np.array(result)
 
-    def get_dictionnaire(self, size: int, step: int = 1, max_missing_pixel: int = 0) -> List[np.ndarray]:
+    def get_dictionnaire(self, size: int, step: int = 1, max_missing_pixel: int = 0) -> np.ndarray:
         """ Retourne tous les patches de l'image ne contenant pas de pixels manquants.
         :param: size, la taille de chaque patch.
         :param: step, la taille du pas d'itération.
@@ -135,24 +136,7 @@ class Picture:
                     # Prevent out of bound patches to be returned
                     if 0 not in patch.shape:
                         result.append(patch)
-        return result
-
-
-def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True):
-    """ Plot le patch sur matplotlib et l'affiche sur demande.
-    :param: patch, le patch à afficher.
-    :param: codage, le codage utilisé pour le patch.
-    :param: show, waut `True` si on affiche le patch après l'avoir plottée.
-    """
-    # Remove missing values
-    new_patch = np.copy(patch)
-    new_patch[patch == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
-
-    new_patch = change_codage(new_patch, codage, Codage.RGB)
-    new_patch = normalize(new_patch, 0, 255, -1, 1).astype(uint8)
-    plt.imshow(new_patch)
-    if show:
-        plt.show()
+        return np.array(result)
 
 
 def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:
