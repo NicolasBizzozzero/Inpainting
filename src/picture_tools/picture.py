@@ -134,7 +134,7 @@ class Picture:
                 patch = self.get_patch(x, y, size)
                 if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 <= max_missing_pixel:
                     # Prevent out of bound patches to be returned
-                    if 0 not in patch.shape:
+                    if patch.shape == (size, size, 3):
                         result.append(patch)
         return np.array(result)
 

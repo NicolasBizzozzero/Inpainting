@@ -29,5 +29,11 @@ def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True
         plt.show()
 
 
+def flatten(patch: np.ndarray) -> np.ndarray:
+    """ Flatten le patch! """
+    return patch.flatten(order='C')
+
+
+
 if __name__ == "__main__":
     pass

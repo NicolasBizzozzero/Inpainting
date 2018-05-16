@@ -2,12 +2,13 @@ from typing import List, Tuple
 from copy import copy
 
 import numpy as np
+from sklearn.linear_model import Lasso
 
 from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL
 from src.linear.cost_function import *
 from src.linear.gradient_descent import DescenteDeGradient
 from src.linear.linear_regression import Initialisation, LinearRegression
-from src.picture_tools.tools import get_center
+from src.picture_tools.tools import get_center, flatten
 
 
 class InPainting:
@@ -39,12 +40,18 @@ class InPainting:
             # On récupère le patch centré sur le prochain pixel à traiter
             next_pixel = self._get_next_pixel(picture.pixels)
             patch = picture.get_patch(*next_pixel, size=self.patch_size)
+            # TODO: parfois, patch est vide
 
             # On approxime le patch en fonction du dictionnaire
+            patch = flatten(patch)
             dictionary = picture.get_dictionnaire(self.patch_size, self.step, self.max_missing_pixel)
-            print(dictionary.shape)
-            print(dictionary[0].shape)
-            self.classifier.fit(dictionary, patch)
+            dictionary = np.array(list(map(flatten, dictionary)))
+            new_d = []
+            for e in dictionary:
+            	new_d.append(e.reshape(len(e), 1))
+            classifier = Lasso()
+            classifier.fit(new_d, patch)
+            # self.classifier.fit(dictionary, patch)
 
             # On remplace le pixel qu'on souhaitait remplir
             new_value = np.dot(picture.pixels[next_pixel], self.classifier.w.T)

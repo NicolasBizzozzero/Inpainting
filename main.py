@@ -18,12 +18,12 @@ CODAGE = Codage.RGB
 def main():
     # Chargement de l'image
     picture = Picture(PICTURE_PATH, codage=CODAGE)
-    picture.show()
+    # picture.show()
 
     # Ajout du bruit
     picture.add_rectangle(45, 45, 50, 80)
     picture.add_noise(0.0001)
-    picture.show()
+    # picture.show()
 
     # On inpaint l'image !
     inpainting = InPainting(PATCH_SIZE)

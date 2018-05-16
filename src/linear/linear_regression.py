@@ -26,7 +26,7 @@ class UnknownInitialisation(Exception):
 
 
 class LinearRegression:
-    def __init__(self, loss=mse, loss_g=mse_g, max_iter=10000, eps=0.01, biais=True, activation=np.sign,
+    def __init__(self, loss=l1, loss_g=l1_g, max_iter=10000, eps=0.01, biais=True, activation=np.sign,
                  type_descente=DescenteDeGradient.MINI_BATCH, taille_batch=50, initialisation=Initialisation.RANDOM,
                  projection=identite, alpha=None):
         """ :loss: fonction de cout
@@ -74,7 +74,7 @@ class LinearRegression:
             datax = np.c_[datax, np.ones(len(datax))]
 
         # Initialisation du vecteur de poids
-        self._init_w(taille=datax.shape[1])
+        self.w = self._init_w(taille=datax.shape[1])
 
         # Optimisation du vecteur de poids
         self.w = gradient_descent(datax, datay,
