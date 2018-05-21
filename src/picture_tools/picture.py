@@ -9,13 +9,14 @@ from copy import deepcopy
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 from numpy import uint8
 
 from src.picture_tools.codage import Codage, change_codage
-from src.common import normalize
-
+from src.common import normalize, time_this
 
 VALUE_MISSING_PIXEL = np.ones((3,)) * -100
+VALUE_SHOWING_MISSING_PIXEL = np.random.uniform(low=-1, high=1)
 
 
 class Picture:
@@ -43,8 +44,7 @@ class Picture:
         """
         # Remove missing values
         picture = np.copy(self.pixels)
-        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(
-            low=-1, high=1)
+        picture[picture == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
 
         picture = change_codage(picture, self.codage, Codage.RGB)
         picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
@@ -104,7 +104,19 @@ class Picture:
         :param: size, la longueur du patch.
         :return: Le contenu du patch demandé.
         """
-        return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
+        if not self.out_of_bounds_patch(x, y, size):
+            return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
+        else:
+            patch = []
+            for index_x in range(x - (size // 2), x + (size // 2) + 1):
+                new_line = []
+                for index_y in range(y - (size // 2), y + (size // 2) + 1):
+                    if not self.out_of_bounds(index_x, index_y):
+                        new_line.append(self.pixels[index_x, index_y])
+                    else:
+                        new_line.append(VALUE_MISSING_PIXEL)
+                patch.append(np.array(new_line))
+            return np.array(patch)
 
     def get_patches(self, size: int, step: int = 1, min_missing_pixel: int = 1) -> np.ndarray:
         """ Retourne tous les patches de l'image contenant des pixels manquants.
@@ -137,6 +149,68 @@ class Picture:
                     if patch.shape == (size, size, 3):
                         result.append(patch)
         return np.array(result)
+
+    def out_of_bounds(self, x: int, y: int) -> bool:
+        """ Check if the pixel located at (x, y) is out of the bounds of the picture.
+        >>> picture = Picture(LENA_COLOR_512, codage=Codage.RGB)
+        >>> picture.out_of_bounds(0, 0)
+        False
+        >>> picture.out_of_bounds(-1, 0)
+        True
+        >>> picture.out_of_bounds(0, -1)
+        True
+        >>> picture.out_of_bounds(-1, -1)
+        True
+        >>> picture.out_of_bounds(511, 511)
+        False
+        >>> picture.out_of_bounds(512, 511)
+        True
+        >>> picture.out_of_bounds(512, 512)
+        True
+        >>> picture.out_of_bounds(512, -1)
+        True
+        >>> picture.out_of_bounds(-1, 512)
+        True
+        """
+        return not (0 <= x < self.pixels.shape[0] and 0 <= y < self.pixels.shape[1])
+
+    def out_of_bounds_patch(self, x: int, y: int, size: int) -> bool:
+        return (x - (size // 2) <= 0) or\
+               (x + (size // 2) + 1 < self.pixels.shape[0]) or \
+               (y - (size // 2) <= 0) or \
+               (y + (size // 2) + 1 < self.pixels.shape[1])
+
+
+def get_center(pixels: np.ndarray) -> np.ndarray:
+    """ Return the pixel at the center of the pixels. """
+    return pixels[(pixels.shape[0] - 1) // 2, (pixels.shape[1] - 1) // 2]
+
+
+def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True):
+    """ Plot le patch sur matplotlib et l'affiche sur demande.
+    :param: patch, le patch à afficher.
+    :param: codage, le codage utilisé pour le patch.
+    :param: show, waut `True` si on affiche le patch après l'avoir plottée.
+    """
+    # Remove missing values
+    new_patch = np.copy(patch)
+    new_patch[patch == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+
+    new_patch = change_codage(new_patch, codage, Codage.RGB)
+    new_patch = normalize(new_patch, 0, 255, -1, 1).astype(uint8)
+    plt.imshow(new_patch)
+    if show:
+        plt.show()
+
+
+def flatten(patch: np.ndarray) -> np.ndarray:
+    """ Convertit un patch en un vecteur. """
+    return np.copy(patch).reshape(-1)
+
+
+def unflatten(vector: np.ndarray, size_patch: int) -> np.ndarray:
+    """ Convertit un vecteur en un patch. """
+    return np.copy(vector).reshape(size_patch, size_patch, 3)
 
 
 def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:

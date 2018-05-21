@@ -2,14 +2,13 @@ from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_CO
     LENA_GRAY_512, LIVINGROOM, MANDRIL_COLOR, MANDRIL_GRAY, PEPPERS_COLOR, PEPPERS_GRAY, PIRATE, WALKBRIDGE, \
     WOMAN_BLONDE, WOMAN_DARKHAIR
 from src.picture_tools.codage import Codage
-from src.picture_tools.picture import Picture
-from src.picture_tools.tools import show_patch
+from src.picture_tools.picture import Picture, show_patch
 from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
 from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
 from src.inpainting import InPainting
 
 
-PATCH_SIZE = 5
+PATCH_SIZE = 21
 STEP = PATCH_SIZE
 PICTURE_PATH = LENA_COLOR_512
 CODAGE = Codage.RGB
@@ -18,12 +17,12 @@ CODAGE = Codage.RGB
 def main():
     # Chargement de l'image
     picture = Picture(PICTURE_PATH, codage=CODAGE)
-    # picture.show()
+    picture.show()
 
     # Ajout du bruit
-    picture.add_rectangle(45, 45, 50, 80)
-    picture.add_noise(0.0001)
-    # picture.show()
+    # picture.add_rectangle(3, 3, 10, 10)
+    picture.add_noise(0.01)
+    picture.show()
 
     # On inpaint l'image !
     inpainting = InPainting(PATCH_SIZE)

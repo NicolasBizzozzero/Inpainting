@@ -49,19 +49,19 @@ def gradient_descent(datax, datay, type_descente, w_init, loss_g,
         raise UnknownDescenteDeGradient(type_descente)
 
 
-def batch(datax, datay, w_init, max_iter, pas, loss_g, **kwaargs):
+def batch(datax, datay, w_init, max_iter, pas, loss_g, *args, **kwaargs):
     """ Effectue une descente de gradient de type batch (par lot).
     Une descente de gradient de type batch calcule, à chaque itération, le
     gradient sur toutes les données.
     """
     w = w_init
     for _ in range(max_iter):
-        w = w - pas * loss_g(datax, datay, w, **kwaargs)
+        w = w - pas * loss_g(datax, datay, w, *args, **kwaargs)
     return w
 
 
 def mini_batch(datax, datay, w_init, max_iter, pas,
-               loss_g, batch_size):
+               loss_g, batch_size, *args, **kwaargs):
     """ Effectue une descente de gradient de type mini-batch (par mini-lot).
     Une descente de gradient de type mini-batch calcule, à chaque itération,
     le gradient sur un sous-ensemble des données tiré aléatoirement.
@@ -74,11 +74,11 @@ def mini_batch(datax, datay, w_init, max_iter, pas,
         indexes = indexes[:batch_size]
         datax_bis, datay_bis = datax[indexes], datay[indexes]
 
-        w = w - pas * loss_g(datax_bis, datay_bis, w)
+        w = w - pas * loss_g(datax_bis, datay_bis, w, *args, **kwaargs)
     return w
 
 
-def stochastic(datax, datay, w_init, max_iter, pas, loss_g):
+def stochastic(datax, datay, w_init, max_iter, pas, loss_g, *args, **kwaargs):
     """ Effectue une descente de gradient de type stochastique.
     Une descente de gradient de type stochastique calcule, à chaque
     itération, le gradient sur un singleton des données tiré aléatoirement.
@@ -89,7 +89,7 @@ def stochastic(datax, datay, w_init, max_iter, pas, loss_g):
         index = np.random.randint(len(datay))
         datax_bis, datay_bis = datax[index], datay[index]
 
-        w = w - pas * loss_g(datax_bis, datay_bis, w)
+        w = w - pas * loss_g(datax_bis, datay_bis, w, *args, **kwaargs)
     return w
 
 

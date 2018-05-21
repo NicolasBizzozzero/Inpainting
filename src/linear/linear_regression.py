@@ -28,7 +28,7 @@ class UnknownInitialisation(Exception):
 class LinearRegression:
     def __init__(self, loss=l1, loss_g=l1_g, max_iter=10000, eps=0.01, biais=True, activation=np.sign,
                  type_descente=DescenteDeGradient.MINI_BATCH, taille_batch=50, initialisation=Initialisation.RANDOM,
-                 projection=identite, alpha=None):
+                 projection=identite, alpha=0.1):
         """ :loss: fonction de cout
             :loss_g: gradient de la fonction de cout
             :max_iter: nombre d'iterations
