@@ -7,6 +7,9 @@ import numpy as np
 from src.picture_tools.picture import VALUE_MISSING_PIXEL
 
 
+_CACHED_PRIORITIES = None
+
+
 class PixelChoosingStrategy(IntEnum):
     FIRST_PIXEL = 0
     RANDOM = 1
@@ -42,7 +45,14 @@ def _random(pixels: np.ndarray, value_missing_pixel) -> Tuple[int, int]:
 
 
 def _boundary_to_center(pixels: np.ndarray, value_missing_pixel) -> Tuple[int, int]:
-    pass
+    global _CACHED_PRIORITIES
+
+    if _CACHED_PRIORITIES is not None:
+        # Chose a priority, delete it then return it
+        # If empty, replace by None
+        pass
+
+    # Else, compute the priorities then assign them
 
 
 if __name__ == "__main__":

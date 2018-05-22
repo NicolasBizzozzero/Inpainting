@@ -6,28 +6,35 @@ from src.picture_tools.picture import Picture, show_patch
 from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
 from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
 from src.inpainting import InPainting
+from src.common.matplotlib import show_pictures
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
-PATCH_SIZE = 21
+PATCH_SIZE = 9
 STEP = PATCH_SIZE
-PICTURE_PATH = LENA_COLOR_512
-CODAGE = Codage.RGB
+PICTURE_PATH = OUTDOOR
+CODAGE = Codage.HSV
 
 
 def main():
     # Chargement de l'image
-    picture = Picture(PICTURE_PATH, codage=CODAGE)
-    picture.show()
+    original_picture = Picture(PICTURE_PATH, codage=CODAGE)
 
     # Ajout du bruit
-    picture.add_rectangle(250, 190, 40, 50)
-    # picture.add_noise(0.01)
-    picture.show()
+    noisy_picture = original_picture.copy()
+    # noisy_picture.add_noise(0.01)
+    noisy_picture.add_rectangle(288, 497, 190, 80)
 
     # On inpaint l'image !
     inpainting = InPainting(PATCH_SIZE)
-    picture = inpainting.inpaint(picture)
-    picture.show()
+    inpainted_picture = inpainting.inpaint(noisy_picture)
+
+    # Affichage des résultats
+    show_pictures(pictures=[original_picture._get_showable_picture(), noisy_picture._get_showable_picture(),
+                            inpainted_picture._get_showable_picture()],
+                  titles=["Original picture", "Noisy picture", "InPainted picture"])
 
 
 def main_all_vs_all():
