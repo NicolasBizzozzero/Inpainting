@@ -55,8 +55,7 @@ class InPainting:
             # On reconstruit le pixel choisit
             # TODO: parfois, patch est vide
             patch = picture.get_patch(*next_pixel, self.patch_size)
-            next_pixel_value = self._get_next_pixel_value(patch, dictionary_hue, dictionary_saturation,
-                                                          dictionary_value)
+            next_pixel_value = self._get_next_pixel_value(patch, dictionary_hue)
             picture.pixels[next_pixel] = next_pixel_value
 
             # On met à jour la barre de progression
@@ -65,32 +64,23 @@ class InPainting:
         progress_bar.finish()
         return picture
 
-    def _get_next_pixel_value(self, patch, dictionary_hue, dictionary_saturation, dictionary_value) -> np.ndarray:
+    def _get_next_pixel_value(self, patch, dictionary) -> np.ndarray:
         # Construction des ensembles d'apprentissage
-        datax_hue, datax_saturation, datax_value, datay_hue, datay_saturation, datay_value = [], [], [], [], [], []
+        datax, datay = [], []
         # On itère sur chaque pixel du patch à reconstruire
         for x in range(self.patch_size):
             for y in range(self.patch_size):
                 # Si on tombe sur une valeur manquante, on ne l'ajoute évidemment pas (impossible à apprendre)
                 if all(self.value_missing_pixel != patch[x, y]):
-                    datax_hue.append(dictionary_hue[:, x, y])
-                    datax_saturation.append(dictionary_saturation[:, x, y])
-                    datax_value.append(dictionary_value[:, x, y])
-                    datay_hue.append(patch[x, y, 0])
-                    datay_saturation.append(patch[x, y, 1])
-                    datay_value.append(patch[x, y, 2])
+                    datax.append(dictionary[:, x, y])
+                    datay.append(patch[x, y])
 
         # Apprentissage
-        self._classifier_hue.fit(datax_hue, datay_hue)
-        self._classifier_saturation.fit(datax_saturation, datay_saturation)
-        self._classifier_value.fit(datax_value, datay_value)
+        self._classifier_hue.fit(datax, datay)
 
         # Prédiction
         x, y = self.patch_size // 2, self.patch_size // 2
-        hue = self._classifier_hue.predict(dictionary_hue[:, x, y].reshape(1, -1))
-        saturation = self._classifier_saturation.predict(dictionary_saturation[:, x, y].reshape(1, -1))
-        value = self._classifier_value.predict(dictionary_value[:, x, y].reshape(1, -1))
-        return np.hstack((hue, saturation, value))
+        return self._classifier_hue.predict(dictionary[:, x, y].reshape(1, -1))
 
 
 if __name__ == "__main__":
