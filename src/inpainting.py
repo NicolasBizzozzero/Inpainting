@@ -3,44 +3,34 @@ from copy import copy
 
 import numpy as np
 from sklearn.linear_model import Lasso
-from progressbar import ProgressBar, Percentage, Counter, Timer
+from progressbar import ProgressBar, Percentage, Counter, Timer, ETA
 
 from src.common import time_this
 from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL, get_center, flatten, unflatten, show_patch
 from src.linear.cost_function import *
-from src.linear.gradient_descent import DescenteDeGradient
-from src.linear.linear_regression import Initialisation, LinearRegression
 
 
-PB_WIDGETS = ["Inpainting: processed ", Counter(), " pixels [", Percentage(), "], ",
-              Timer()]
+PB_WIDGETS = ["Inpainting: processed ", Counter(), " pixels [", Percentage(), "], ", Timer(), ", ", ETA()]
 
 
 class InPainting:
-    def __init__(self, patch_size: int, step: int = None, max_missing_pixel: int = 0,
-                 value_missing_pixel: int = VALUE_MISSING_PIXEL, loss: callable = l1, loss_g: callable = l1_g,
-                 max_iter: int = 10000, eps: float = 0.01, biais: bool = True,
-                 type_descente: DescenteDeGradient = DescenteDeGradient.BATCH, taille_batch: int = 50,
-                 initialisation: Initialisation = Initialisation.RANDOM, alpha: float = 0.001):
+    def __init__(self, patch_size: int, step: int = None, value_missing_pixel: int = VALUE_MISSING_PIXEL,
+                 alpha: float = 1.0, max_iterations: int = 1000, tolerance: float = 0.0001):
         self.patch_size = patch_size
         self.step = patch_size if step is None else step
-        self.max_missing_pixel = max_missing_pixel
-        self.loss = loss
-        self.loss_g = loss_g
-        self.max_iter = max_iter
-        self.eps = eps
-        self.biais = biais
-        self.type_descente = type_descente
-        self.taille_batch = taille_batch
-        self.initialisation = initialisation
         self.alpha = alpha
         self.value_missing_pixel = value_missing_pixel
 
-        self.classifier = LinearRegression(loss=loss, loss_g=loss_g, max_iter=max_iter, eps=eps, biais=biais,
-                                           type_descente=type_descente, taille_batch=taille_batch,
-                                           initialisation=initialisation, alpha=alpha)
+        classifiers_kwaargs = {"alpha": alpha, "copy_X": True, "fit_intercept": True, "max_iter": max_iterations,
+                               "normalize": False, "positive": False, "precompute": False, "random_state": None,
+                               "selection": 'cyclic', "tol": tolerance, "warm_start": False}
+        self._classifier_hue = Lasso(**classifiers_kwaargs)
+        self._classifier_saturation = Lasso(**classifiers_kwaargs)
+        self._classifier_value = Lasso(**classifiers_kwaargs)
 
-    def inpaint(self, picture: Picture):
+    def inpaint(self, picture: Picture) -> Picture:
+        picture = picture.copy()
+
         # Initialisation de la barre de progression
         progress_bar = ProgressBar(widgets=PB_WIDGETS,
                                    maxval=len(picture.pixels[picture.pixels == self.value_missing_pixel]) // 3,
@@ -48,14 +38,13 @@ class InPainting:
         progress_bar.start()
 
         # On récupère le dictionnaire
-        dictionary = picture.get_dictionnaire(self.patch_size, self.step, self.max_missing_pixel)
+        dictionary = picture.get_dictionnaire(self.patch_size, self.step, max_missing_pixel=0)
 
         while self.value_missing_pixel in picture.pixels:
             # On récupère le patch centré sur le prochain pixel à traiter
             next_pixel = self._get_next_pixel(picture.pixels)
 
-            # On reconstruit le pixel choisit
-            show_patch(picture.get_patch(*next_pixel, self.patch_size))
+            # On reconstruit le pixel choisi
             next_pixel_value = self._get_next_pixel_value(picture, dictionary, *next_pixel)
             picture.pixels[next_pixel] = next_pixel_value
 
@@ -63,8 +52,9 @@ class InPainting:
             progress_bar.update(progress_bar.value + 1)
 
         progress_bar.finish()
+        return picture
 
-    def _get_next_pixel(self, pixels: np.ndarray) -> Tuple[int, int]:
+    def _get_next_pixel(self, pixels: np.ndarray, strategy) -> Tuple[int, int]:
         """ Return the next pixel to be painted.
         This pixel is found by assigning a priority value to all remaining pixels in the picture, then by returning the
         one with the maximal priority.
@@ -99,18 +89,15 @@ class InPainting:
                 datay_value.append(patch[x, y, 2])
 
         # Apprentissage
-        classifier_hue = Lasso()
-        classifier_saturation = Lasso()
-        classifier_value = Lasso()
-        classifier_hue.fit(datax_hue, datay_hue)
-        classifier_saturation.fit(datax_saturation, datay_saturation)
-        classifier_value.fit(datax_value, datay_value)
+        self._classifier_hue.fit(datax_hue, datay_hue)
+        self._classifier_saturation.fit(datax_saturation, datay_saturation)
+        self._classifier_value.fit(datax_value, datay_value)
 
         # Prédiction
         x, y = self.patch_size // 2, self.patch_size // 2
-        hue = classifier_hue.predict(dictionary[:, x, y, 0].reshape(1, -1))
-        saturation = classifier_saturation.predict(dictionary[:, x, y, 1].reshape(1, -1))
-        value = classifier_value.predict(dictionary[:, x, y, 2].reshape(1, -1))
+        hue = self._classifier_hue.predict(dictionary[:, x, y, 0].reshape(1, -1))
+        saturation = self._classifier_saturation.predict(dictionary[:, x, y, 1].reshape(1, -1))
+        value = self._classifier_value.predict(dictionary[:, x, y, 2].reshape(1, -1))
         return np.hstack((hue, saturation, value))
 
 

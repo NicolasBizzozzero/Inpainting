@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-""" Ce module contient toutes les méthodes et fonctions n'ayant pas pu être rangées dans un module précis. Il est
-souvent réutilisé dans plusieurs modules différents, et doit donc être en bout de chaîne pour éviter les dépendances
-cycliques.
-"""
+from typing import Union
 
 import numpy as np
-from typing import Union
 
 Number = Union[int, float]
 
@@ -60,21 +55,6 @@ def make_grid(data=None, xmin=-5, xmax=5, ymin=-5, ymax=5, step=20):
                        np.arange(ymin, ymax, (ymax - ymin) * 1. / step))
     grid = np.c_[x.ravel(), y.ravel()]
     return grid, x, y
-
-
-def time_this(function: callable) -> callable:
-    """ Print the execution time of the wrapped function. """
-    def wrapper(*args, **kwargs):
-        from time import time
-        time_begin = time()
-        result = function(*args, **kwargs)
-        time_end = time()
-        time_total = time_end - time_begin
-        second_or_seconds = "second" if (time_total < 1) else "seconds"
-        print("Execution time for \"{}\": {} {}".format(
-            function.__name__, time_total, second_or_seconds))
-        return result
-    return wrapper
 
 
 if __name__ == "__main__":

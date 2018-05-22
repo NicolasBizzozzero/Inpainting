@@ -13,10 +13,12 @@ from matplotlib import pyplot as plt
 from numpy import uint8
 
 from src.picture_tools.codage import Codage, change_codage
-from src.common import normalize, time_this
+from src.common.math import normalize
+from src.common.decorators import time_this
+
 
 VALUE_MISSING_PIXEL = np.ones((3,)) * -100
-VALUE_SHOWING_MISSING_PIXEL = np.random.uniform(low=-1, high=1)
+VALUE_SHOWING_MISSING_PIXEL = np.array([-1])  # np.random.uniform(low=-1, high=1)
 
 
 class Picture:
@@ -42,12 +44,8 @@ class Picture:
         """ Plot l'image sur matplotlib et l'affiche sur demande.
         :param: show, waut `True` si on affiche l'image après l'avoir plottée.
         """
-        # Remove missing values
-        picture = np.copy(self.pixels)
-        picture[picture == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
-
-        picture = change_codage(picture, self.codage, Codage.RGB)
-        picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
+        picture = self._get_showable_picture()
+        plt.axis("off")
         plt.imshow(picture)
         if show:
             plt.show()
@@ -63,13 +61,20 @@ class Picture:
 
         # Remove missing values
         picture = np.copy(self.pixels)
-        picture[picture == VALUE_MISSING_PIXEL] = np.random.uniform(
-            low=-1, high=1)
+        picture[picture == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
 
         picture = change_codage(self.pixels, self.codage, Codage.RGB)
         picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
         plt.imshow(picture)
         plt.savefig(picture_path)
+
+    def copy(self):
+        new_picture = Picture.__new__(Picture)
+        new_picture.picture_path = self.picture_path
+        new_picture.codage = self.codage
+        new_picture.hauteur, new_picture.largeur = self.hauteur, self.largeur
+        new_picture.pixels = np.copy(self.pixels)
+        return new_picture
 
     def add_noise(self, threshold: float = 0.05):
         """ Ajoute aléatoirement du bruit dans l'image.
@@ -179,6 +184,23 @@ class Picture:
                (x + (size // 2) + 1 < self.pixels.shape[0]) or \
                (y - (size // 2) <= 0) or \
                (y + (size // 2) + 1 < self.pixels.shape[1])
+
+    def _get_showable_picture(self) -> np.ndarray:
+        """ Return the picture in a showable format (as in a format which can be plotted by invocating `plt.imshow`on
+        it.
+        """
+        pixels = np.copy(self.pixels)
+
+        # Fill the missing pixels with an interpretable value
+        pixels[pixels == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
+
+        # Change the format of the picture to the RGB format (for better visibility)
+        pixels = change_codage(pixels, self.codage, Codage.RGB)
+
+        # Normalise the values of the pixel from [-1, 1] to [0, 255]
+        pixels = normalize(pixels, 0, 255, -1, 1).astype(uint8)
+
+        return pixels
 
 
 def get_center(pixels: np.ndarray) -> np.ndarray:

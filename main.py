@@ -1,6 +1,6 @@
 from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_COLOR_256, LENA_COLOR_512, LENA_GRAY_256, \
     LENA_GRAY_512, LIVINGROOM, MANDRIL_COLOR, MANDRIL_GRAY, PEPPERS_COLOR, PEPPERS_GRAY, PIRATE, WALKBRIDGE, \
-    WOMAN_BLONDE, WOMAN_DARKHAIR
+    WOMAN_BLONDE, WOMAN_DARKHAIR, CASTLE, OUTDOOR
 from src.picture_tools.codage import Codage
 from src.picture_tools.picture import Picture, show_patch
 from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
@@ -20,13 +20,13 @@ def main():
     picture.show()
 
     # Ajout du bruit
-    # picture.add_rectangle(3, 3, 10, 10)
-    picture.add_noise(0.01)
+    picture.add_rectangle(250, 190, 40, 50)
+    # picture.add_noise(0.01)
     picture.show()
 
     # On inpaint l'image !
     inpainting = InPainting(PATCH_SIZE)
-    inpainting.inpaint(picture)
+    picture = inpainting.inpaint(picture)
     picture.show()
 
 

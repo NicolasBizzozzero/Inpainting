@@ -6,6 +6,7 @@ from os.path import join, dirname
 
 _PATH_DIR_PICTURES = join(dirname(__file__), "../../res/pictures")
 
+# Famous pictures
 CAMERAMAN = join(_PATH_DIR_PICTURES, "cameraman.tif")
 HOUSE = join(_PATH_DIR_PICTURES, "house.tif")
 JETPLANE = join(_PATH_DIR_PICTURES, "jetplane.tif")
@@ -23,6 +24,10 @@ PIRATE = join(_PATH_DIR_PICTURES, "pirate.tif")
 WALKBRIDGE = join(_PATH_DIR_PICTURES, "walkbridg.tif")
 WOMAN_BLONDE = join(_PATH_DIR_PICTURES, "woman_blonde.tif")
 WOMAN_DARKHAIR = join(_PATH_DIR_PICTURES, "woman_darkhair.tif")
+
+# Personal pictures
+CASTLE = join(_PATH_DIR_PICTURES, "castle.jpg")
+OUTDOOR = join(_PATH_DIR_PICTURES, "outdoor.jpg")
 
 
 if __name__ == "__main__":
