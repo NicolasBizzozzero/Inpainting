@@ -8,7 +8,7 @@ import colorsys
 
 import numpy as np
 
-from src.common import normalize
+from src.common.math import normalize
 
 
 class Codage(IntEnum):
