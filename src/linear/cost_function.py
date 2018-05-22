@@ -12,7 +12,7 @@ dimensions d'entrées.
 import numpy as np
 from functools import wraps
 
-from src.common import norme_1, norme_2
+from src.common.math import norme_1, norme_2
 
 
 def _decorator_vec(fonc):

@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.linear_model import Lasso
 from progressbar import ProgressBar, Percentage, Counter, Timer, ETA
 
-from src.common import time_this
+from src.common.decorators import time_this
 from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL, get_center, flatten, unflatten, show_patch
 from src.linear.cost_function import *
 
