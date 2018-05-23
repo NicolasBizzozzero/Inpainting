@@ -80,8 +80,8 @@ class Picture:
         """
         for x in range(self.largeur):
             for y in range(self.hauteur):
-                self.pixels[y, x] = VALUE_MISSING_PIXEL if random.random(
-                ) < threshold else self.pixels[y, x]
+                self.pixels[x, y] = VALUE_MISSING_PIXEL if random.random(
+                ) < threshold else self.pixels[x, y]
 
     def add_rectangle(self, x: int, y: int, hauteur: int, largeur: int) -> None:
         """ Ajoute aléatoirement un rectangle de bruit dans l'image.
@@ -90,7 +90,7 @@ class Picture:
         :param: hauteur, La hauteur du rectangle
         :param: largeur, La largeur du rectangle
         """
-        self.pixels[y:y + hauteur, x:x + largeur] = VALUE_MISSING_PIXEL
+        self.pixels[x:x + largeur, y:y + hauteur] = VALUE_MISSING_PIXEL
 
     def get_pixel(self, x: int, y: int) -> np.ndarray:
         """ Retourne le pixel de l'image aux indexes (x, y).
@@ -98,7 +98,7 @@ class Picture:
         :param: y, l'index de la ligne.
         :return: Le contenu du pixel demandé.
         """
-        return self.pixels[y, x]
+        return self.pixels[x, y]
 
     def get_patch(self, x: int, y: int, size: int) -> np.ndarray:
         """ Retourne le patch de l'image centré aux indexes (x, y).
@@ -108,12 +108,12 @@ class Picture:
         :return: Le contenu du patch demandé.
         """
         if not self.out_of_bounds_patch(x, y, size):
-            return self.pixels[y - (size // 2):y + (size // 2) + 1, x - (size // 2): x + (size // 2) + 1]
+            return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
         else:
             patch = []
-            for index_y in range(y - (size // 2), y + (size // 2) + 1):
+            for index_x in range(x - (size // 2), x + (size // 2) + 1):
                 new_line = []
-                for index_x in range(x - (size // 2), x + (size // 2) + 1):
+                for index_y in range(y - (size // 2), y + (size // 2) + 1):
                     if not self.out_of_bounds(index_x, index_y):
                         new_line.append(self.get_pixel(index_x, index_y))
                     else:
@@ -228,14 +228,14 @@ def unflatten(vector: np.ndarray, size_patch: int) -> np.ndarray:
 
 def out_of_bounds(pixels: np.ndarray, x: int, y: int) -> bool:
     """ Check if the pixel located at (x, y) is out of the bounds of the picture. """
-    return not (0 <= x < pixels.shape[1] and 0 <= y < pixels.shape[0])
+    return not (0 <= x < pixels.shape[0] and 0 <= y < pixels.shape[1])
 
 
 def out_of_bounds_patch(pixels: np.ndarray, x: int, y: int, size: int) -> bool:
     return (x - (size // 2) <= 0) or \
-           (x + (size // 2) + 1 < pixels.shape[1]) or \
+           (x + (size // 2) + 1 < pixels.shape[0]) or \
            (y - (size // 2) <= 0) or \
-           (y + (size // 2) + 1 < pixels.shape[0])
+           (y + (size // 2) + 1 < pixels.shape[1])
 
 
 def get_patch(pixels: np.ndarray, x: int, y: int, size: int,
@@ -247,14 +247,14 @@ def get_patch(pixels: np.ndarray, x: int, y: int, size: int,
     :return: Le contenu du patch demandé.
     """
     if not out_of_bounds_patch(pixels, x, y, size):
-        return pixels[y - (size // 2):y + (size // 2) + 1, x - (size // 2): x + (size // 2) + 1]
+        return pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
     else:
         patch = []
-        for index_y in range(y - (size // 2), y + (size // 2) + 1):
+        for index_x in range(x - (size // 2), x + (size // 2) + 1):
             new_line = []
-            for index_x in range(x - (size // 2), x + (size // 2) + 1):
+            for index_y in range(y - (size // 2), y + (size // 2) + 1):
                 if not out_of_bounds(pixels, index_x, index_y):
-                    new_line.append(pixels[index_y, index_x])
+                    new_line.append(pixels[index_x, index_y])
                 else:
                     new_line.append(value_out_of_bounds)
             patch.append(np.array(new_line))
@@ -270,7 +270,7 @@ def iter_patch(x: int, y: int, size: int):
 def iter_patch_empty(pixels: np.ndarray, x: int, y: int, size: int):
     for index_x, index_y in iter_patch(x, y, size):
         if not out_of_bounds(pixels, index_x, index_y):
-            if all(pixels[index_y, index_x] == VALUE_MISSING_PIXEL):
+            if all(pixels[index_x, index_y] == VALUE_MISSING_PIXEL):
                 yield index_x, index_y
 
 

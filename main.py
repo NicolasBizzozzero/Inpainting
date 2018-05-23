@@ -2,7 +2,7 @@ from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_CO
     LENA_GRAY_512, LIVINGROOM, MANDRIL_COLOR, MANDRIL_GRAY, PEPPERS_COLOR, PEPPERS_GRAY, PIRATE, WALKBRIDGE, \
     WOMAN_BLONDE, WOMAN_DARKHAIR, CASTLE, OUTDOOR
 from src.picture_tools.codage import Codage
-from src.picture_tools.picture import Picture, show_patch
+from src.picture_tools.picture import Picture, show_patch, flatten, unflatten, VALUE_MISSING_PIXEL, VALUE_OUT_OF_BOUNDS, get_patch
 from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
 from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
 from src.inpainting import InPainting
@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-PATCH_SIZE = 9
-STEP = PATCH_SIZE
-PICTURE_PATH = OUTDOOR
-CODAGE = Codage.HSV
+PATCH_SIZE = 5
+STEP = PATCH_SIZE // 2
+CODAGE = Codage.RGB
+PICTURE_PATH = LENA_COLOR_512
 
 
 def main():

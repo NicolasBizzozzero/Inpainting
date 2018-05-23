@@ -58,7 +58,7 @@ class InPainting:
                 next_pixel_value = self.predict(x - next_pixel[0] + (self.patch_size // 2),
                                                 y - next_pixel[1] + (self.patch_size // 2),
                                                 dictionary)
-                picture.pixels[y, x] = next_pixel_value
+                picture.pixels[x, y] = next_pixel_value
                 progress_bar.update(progress_bar.value + 1)
 
         progress_bar.finish()
@@ -73,9 +73,9 @@ class InPainting:
         self._classifier_value.fit(datax_value, datay_value)
 
     def predict(self, x, y, dictionary):
-        hue = self._classifier_hue.predict(dictionary[:, y, x, 0].reshape(1, -1))
-        saturation = self._classifier_saturation.predict(dictionary[:, y, x, 1].reshape(1, -1))
-        value = self._classifier_value.predict(dictionary[:, y, x, 2].reshape(1, -1))
+        hue = self._classifier_hue.predict(dictionary[:, x, y, 0].reshape(1, -1))
+        saturation = self._classifier_saturation.predict(dictionary[:, x, y, 1].reshape(1, -1))
+        value = self._classifier_value.predict(dictionary[:, x, y, 2].reshape(1, -1))
         return np.hstack((hue, saturation, value))
 
     def _get_next_patch(self, picture: Picture, size: int, value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS,
@@ -87,7 +87,7 @@ class InPainting:
         #                                              for (x, y) in picture.get_patches()}
         # return max(patches_priorities.keys(), key=lambda k: patches_priorities[k])
 
-        missing_pixels_y, missing_pixels_x, *_ = np.where(picture.pixels == self.value_missing_pixel)
+        missing_pixels_x, missing_pixels_y, *_ = np.where(picture.pixels == self.value_missing_pixel)
         return zip(missing_pixels_x, missing_pixels_y).__next__()
 
     def _preprocess_training_data(self, patch, dictionary):
@@ -97,13 +97,13 @@ class InPainting:
         for x in range(self.patch_size):
             for y in range(self.patch_size):
                 # Si on tombe sur une valeur manquante, on ne l'ajoute évidemment pas (impossible à apprendre)
-                if np.all(patch[y, x] != self.value_missing_pixel) and np.all(patch[y, x] != self.value_out_of_bounds):
-                    datax_hue.append(dictionary[:, y, x, 0])
-                    datax_saturation.append(dictionary[:, y, x, 1])
-                    datax_value.append(dictionary[:, y, x, 2])
-                    datay_hue.append(patch[y, x, 0])
-                    datay_saturation.append(patch[y, x, 1])
-                    datay_value.append(patch[y, x, 2])
+                if np.all(patch[x, y] != self.value_missing_pixel) and np.all(patch[x, y] != self.value_out_of_bounds):
+                    datax_hue.append(dictionary[:, x, y, 0])
+                    datax_saturation.append(dictionary[:, x, y, 1])
+                    datax_value.append(dictionary[:, x, y, 2])
+                    datay_hue.append(patch[x, y, 0])
+                    datay_saturation.append(patch[x, y, 1])
+                    datay_value.append(patch[x, y, 2])
 
         return np.array(datax_hue), np.array(datax_saturation), \
                np.array(datax_value), np.array(datay_hue), \
