@@ -7,19 +7,19 @@ from sklearn.linear_model import Lasso
 from progressbar import ProgressBar, Percentage, Counter, Timer, ETA
 
 from src.common.decorators import time_this
-from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL, get_center, flatten, unflatten, show_patch
+from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL, VALUE_OUT_OF_BOUNDS, get_center, flatten, unflatten, \
+    show_patch, get_patch, iter_patch, iter_patch_empty
 from src.linear.cost_function import *
-from src.pixel_choosing_strategy import PixelChoosingStrategy, choose_pixel
 
 
 class InPainting:
-    def __init__(self, patch_size: int, step: int = None, value_missing_pixel: int = VALUE_MISSING_PIXEL,
-                 alpha: float = 1.0, max_iterations: int = 1000, tolerance: float = 0.0001,
-                 pixel_choosing_strategy: PixelChoosingStrategy = PixelChoosingStrategy.BOUNDARY_TO_CENTER):
+    def __init__(self, patch_size: int, step: int = None, value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL,
+                 value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS, alpha: float = 1.0, max_iterations: int = 1000,
+                 tolerance: float = 0.0001):
         self.patch_size = patch_size
         self.step = patch_size if step is None else step
         self.value_missing_pixel = value_missing_pixel
-        self.pixel_choosing_strategy = pixel_choosing_strategy
+        self.value_out_of_bounds = value_out_of_bounds
 
         # Initialize one classifier per channel
         classifiers_kwaargs = {"alpha": alpha, "copy_X": True, "fit_intercept": True, "max_iter": max_iterations,
@@ -43,53 +43,94 @@ class InPainting:
 
         # On récupère le dictionnaire
         dictionary = picture.get_dictionnaire(self.patch_size, self.step, max_missing_pixel=0)
-        dictionary_hue, dictionary_saturation, dictionary_value =\
-            [dictionary[:, :, :, 0], dictionary[:, :, :, 1], dictionary[:, :, :, 2]]
 
         while self.value_missing_pixel in picture.pixels:
-            # On récupère le patch centré sur le prochain pixel à traiter
-            next_pixel = choose_pixel(pixels=picture.pixels,
-                                      pixel_choosing_strategy=self.pixel_choosing_strategy,
-                                      value_missing_pixel=self.value_missing_pixel)
-
-            # On reconstruit le pixel choisit
+            # On récupère le prochain patch à traiter
             # TODO: parfois, patch est vide
-            patch = picture.get_patch(*next_pixel, self.patch_size)
-            next_pixel_value = self._get_next_pixel_value(patch, dictionary_hue, dictionary_saturation, dictionary_value)
-            picture.pixels[next_pixel] = next_pixel_value
+            next_pixel = self._get_next_patch(picture, self.patch_size, self.value_out_of_bounds,
+                                              self.value_missing_pixel)
 
-            # On met à jour la barre de progression
-            progress_bar.update(progress_bar.value + 1)
+            # On reconstruit le patch selectionné
+            next_patch = picture.get_patch(*next_pixel, self.patch_size)
+
+            self.fit(dictionary, next_patch)
+            for x, y in iter_patch_empty(picture.pixels, *next_pixel, self.patch_size):
+                next_pixel_value = self.predict(x - next_pixel[0] + (self.patch_size // 2),
+                                                y - next_pixel[1] + (self.patch_size // 2),
+                                                dictionary)
+                picture.pixels[y, x] = next_pixel_value
+                progress_bar.update(progress_bar.value + 1)
 
         progress_bar.finish()
         return picture
 
-    def _get_next_pixel_value(self, patch, dictionary_hue, dictionary_saturation, dictionary_value) -> np.ndarray:
-        # Construction des ensembles d'apprentissage
-        datax_hue, datax_saturation, datax_value, datay_hue, datay_saturation, datay_value = [], [], [], [], [], []
-        # On itère sur chaque pixel du patch à reconstruire
-        for x in range(self.patch_size):
-            for y in range(self.patch_size):
-                # Si on tombe sur une valeur manquante, on ne l'ajoute évidemment pas (impossible à apprendre)
-                if all(self.value_missing_pixel != patch[x, y]):
-                    datax_hue.append(dictionary_hue[:, x, y])
-                    datax_saturation.append(dictionary_saturation[:, x, y])
-                    datax_value.append(dictionary_value[:, x, y])
-                    datay_hue.append(patch[x, y, 0])
-                    datay_saturation.append(patch[x, y, 1])
-                    datay_value.append(patch[x, y, 2])
+    def fit(self, dictionary, patch):
+        datax_hue, datax_saturation, datax_value, datay_hue, datay_saturation, datay_value = \
+            self._preprocess_training_data(patch, dictionary)
 
-        # Apprentissage
         self._classifier_hue.fit(datax_hue, datay_hue)
         self._classifier_saturation.fit(datax_saturation, datay_saturation)
         self._classifier_value.fit(datax_value, datay_value)
 
-        # Prédiction
-        x, y = self.patch_size // 2, self.patch_size // 2
-        hue = self._classifier_hue.predict(dictionary_hue[:, x, y].reshape(1, -1))
-        saturation = self._classifier_saturation.predict(dictionary_saturation[:, x, y].reshape(1, -1))
-        value = self._classifier_value.predict(dictionary_value[:, x, y].reshape(1, -1))
+    def predict(self, x, y, dictionary):
+        hue = self._classifier_hue.predict(dictionary[:, y, x, 0].reshape(1, -1))
+        saturation = self._classifier_saturation.predict(dictionary[:, y, x, 1].reshape(1, -1))
+        value = self._classifier_value.predict(dictionary[:, y, x, 2].reshape(1, -1))
         return np.hstack((hue, saturation, value))
+
+    def _get_next_patch(self, picture: Picture, size: int, value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS,
+                        value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL) -> Tuple[int, int]:
+        # TODO: Implement this heuristic
+        # pixels_confidence = _get_pixels_confidence(picture.pixels, value_missing_pixel)
+        # patches_priorities = {(x, y): patch_priority(picture.pixels, pixels_confidence, x, y, size,
+        #                                              value_out_of_bounds, value_missing_pixel) \
+        #                                              for (x, y) in picture.get_patches()}
+        # return max(patches_priorities.keys(), key=lambda k: patches_priorities[k])
+
+        missing_pixels_y, missing_pixels_x, *_ = np.where(picture.pixels == self.value_missing_pixel)
+        return zip(missing_pixels_x, missing_pixels_y).__next__()
+
+    def _preprocess_training_data(self, patch, dictionary):
+        datax_hue, datax_saturation, datax_value, datay_hue, datay_saturation, datay_value = [], [], [], [], [], []
+
+        # On itère sur chaque pixel du patch à reconstruire
+        for x in range(self.patch_size):
+            for y in range(self.patch_size):
+                # Si on tombe sur une valeur manquante, on ne l'ajoute évidemment pas (impossible à apprendre)
+                if np.all(patch[y, x] != self.value_missing_pixel) and np.all(patch[y, x] != self.value_out_of_bounds):
+                    datax_hue.append(dictionary[:, y, x, 0])
+                    datax_saturation.append(dictionary[:, y, x, 1])
+                    datax_value.append(dictionary[:, y, x, 2])
+                    datay_hue.append(patch[y, x, 0])
+                    datay_saturation.append(patch[y, x, 1])
+                    datay_value.append(patch[y, x, 2])
+
+        return np.array(datax_hue), np.array(datax_saturation), \
+               np.array(datax_value), np.array(datay_hue), \
+               np.array(datay_saturation), np.array(datay_value)
+
+
+def patch_priority(pixels: np.ndarray, pixels_confidence: np.ndarray, x: int, y: int, size: int,
+                   value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS,
+                   value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL) -> float:
+    confidence = _get_patch_confidence(pixels, pixels_confidence, x, y, size, value_out_of_bounds, value_missing_pixel)
+    return confidence
+
+
+def _get_pixels_confidence(pixels: np.ndarray, value_missing_pixels: np.ndarray = VALUE_MISSING_PIXEL) -> np.ndarray:
+    confidence = np.copy(pixels)
+    confidence[confidence != value_missing_pixels] = 1
+    confidence[confidence == value_missing_pixels] = 0
+    return confidence[:, :, 0]
+
+
+def _get_patch_confidence(pixels: np.ndarray, confidence: np.ndarray, x: int, y: int, size: int,
+                          value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS,
+                          value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL) -> float:
+    patch_pixels = get_patch(pixels, x, y, size, value_out_of_bounds)
+    patch_confidence = get_patch(confidence, x, y, size, np.nan)
+    return np.nansum(patch_confidence[(patch_pixels != value_missing_pixel)[:, :, 0]]) / \
+           np.count_nonzero(~np.isnan(patch_confidence))
 
 
 if __name__ == "__main__":

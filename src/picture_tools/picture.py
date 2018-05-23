@@ -2,22 +2,19 @@
 """ Ce module contient toutes les méthodes et fonctions nécessaires pour
 pouvoir manipuler facilement des images.
 """
-from typing import Tuple, List
+from typing import Tuple
 import os.path
 import random
-from copy import deepcopy
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import pyplot as plt
 from numpy import uint8
 
 from src.picture_tools.codage import Codage, change_codage
 from src.common.math import normalize
-from src.common.decorators import time_this
-
 
 VALUE_MISSING_PIXEL = np.ones((3,)) * -100
+VALUE_OUT_OF_BOUNDS = np.ones((3,)) * -1000
 VALUE_SHOWING_MISSING_PIXEL = np.array([-1])  # np.random.uniform(low=-1, high=1)
 
 
@@ -62,6 +59,7 @@ class Picture:
         # Remove missing values
         picture = np.copy(self.pixels)
         picture[picture == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
+        picture[picture == VALUE_OUT_OF_BOUNDS] = VALUE_SHOWING_MISSING_PIXEL
 
         picture = change_codage(self.pixels, self.codage, Codage.RGB)
         picture = normalize(picture, 0, 255, -1, 1).astype(uint8)
@@ -82,8 +80,8 @@ class Picture:
         """
         for x in range(self.largeur):
             for y in range(self.hauteur):
-                self.pixels[x, y] = VALUE_MISSING_PIXEL if random.random(
-                ) < threshold else self.pixels[x, y]
+                self.pixels[y, x] = VALUE_MISSING_PIXEL if random.random(
+                ) < threshold else self.pixels[y, x]
 
     def add_rectangle(self, x: int, y: int, hauteur: int, largeur: int) -> None:
         """ Ajoute aléatoirement un rectangle de bruit dans l'image.
@@ -92,7 +90,7 @@ class Picture:
         :param: hauteur, La hauteur du rectangle
         :param: largeur, La largeur du rectangle
         """
-        self.pixels[x:x + hauteur, y:y + largeur] = VALUE_MISSING_PIXEL
+        self.pixels[y:y + hauteur, x:x + largeur] = VALUE_MISSING_PIXEL
 
     def get_pixel(self, x: int, y: int) -> np.ndarray:
         """ Retourne le pixel de l'image aux indexes (x, y).
@@ -100,7 +98,7 @@ class Picture:
         :param: y, l'index de la ligne.
         :return: Le contenu du pixel demandé.
         """
-        return self.pixels[x, y]
+        return self.pixels[y, x]
 
     def get_patch(self, x: int, y: int, size: int) -> np.ndarray:
         """ Retourne le patch de l'image centré aux indexes (x, y).
@@ -110,33 +108,25 @@ class Picture:
         :return: Le contenu du patch demandé.
         """
         if not self.out_of_bounds_patch(x, y, size):
-            return self.pixels[x - (size // 2):x + (size // 2) + 1, y - (size // 2): y + (size // 2) + 1]
+            return self.pixels[y - (size // 2):y + (size // 2) + 1, x - (size // 2): x + (size // 2) + 1]
         else:
             patch = []
-            for index_x in range(x - (size // 2), x + (size // 2) + 1):
+            for index_y in range(y - (size // 2), y + (size // 2) + 1):
                 new_line = []
-                for index_y in range(y - (size // 2), y + (size // 2) + 1):
+                for index_x in range(x - (size // 2), x + (size // 2) + 1):
                     if not self.out_of_bounds(index_x, index_y):
-                        new_line.append(self.pixels[index_x, index_y])
+                        new_line.append(self.get_pixel(index_x, index_y))
                     else:
-                        new_line.append(VALUE_MISSING_PIXEL)
+                        new_line.append(VALUE_OUT_OF_BOUNDS)
                 patch.append(np.array(new_line))
             return np.array(patch)
 
-    def get_patches(self, size: int, step: int = 1, min_missing_pixel: int = 1) -> np.ndarray:
-        """ Retourne tous les patches de l'image contenant des pixels manquants.
-        :param: size, la taille de chaque patch.
-        :param: step, la taille du pas d'itération.
-        :param: min_missing_pixel, le nombre de pixels manquants à prendre en compte pour retourner ce patch.
+    def get_patches(self) -> np.ndarray:
+        """ Retourne tous les indices des centres des patches de l'image contenant des pixels manquants.
         :return: Une list de patchs contenant des pixels manquants.
         """
-        result = []
-        for x in range(0, self.largeur, step):
-            for y in range(0, self.hauteur, step):
-                patch = self.get_patch(x, y, size)
-                if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 >= min_missing_pixel:
-                    result.append(patch)
-        return np.array(result)
+        return np.array([np.array([x, y]) for x in range(self.largeur) for y in range(self.hauteur) \
+                         if (self.get_pixel(x, y) == VALUE_MISSING_PIXEL).all()])
 
     def get_dictionnaire(self, size: int, step: int = 1, max_missing_pixel: int = 0) -> np.ndarray:
         """ Retourne tous les patches de l'image ne contenant pas de pixels manquants.
@@ -148,10 +138,9 @@ class Picture:
         result = []
         for x in range(0, self.largeur, step):
             for y in range(0, self.hauteur, step):
-                patch = self.get_patch(x, y, size)
-                if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 <= max_missing_pixel:
-                    # Prevent out of bound patches to be returned
-                    if patch.shape == (size, size, 3):
+                if not self.out_of_bounds_patch(x, y, size):
+                    patch = self.get_patch(x, y, size)
+                    if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 <= max_missing_pixel:
                         result.append(patch)
         return np.array(result)
 
@@ -177,13 +166,13 @@ class Picture:
         >>> picture.out_of_bounds(-1, 512)
         True
         """
-        return not (0 <= x < self.pixels.shape[0] and 0 <= y < self.pixels.shape[1])
+        return not (0 <= x < self.largeur and 0 <= y < self.hauteur)
 
     def out_of_bounds_patch(self, x: int, y: int, size: int) -> bool:
-        return (x - (size // 2) <= 0) or\
-               (x + (size // 2) + 1 < self.pixels.shape[0]) or \
-               (y - (size // 2) <= 0) or \
-               (y + (size // 2) + 1 < self.pixels.shape[1])
+        return (x - (size // 2) < 0) or \
+               (x + (size // 2) + 1 >= self.largeur) or \
+               (y - (size // 2) < 0) or \
+               (y + (size // 2) + 1 >= self.hauteur)
 
     def _get_showable_picture(self) -> np.ndarray:
         """ Return the picture in a showable format (as in a format which can be plotted by invocating `plt.imshow`on
@@ -193,6 +182,7 @@ class Picture:
 
         # Fill the missing pixels with an interpretable value
         pixels[pixels == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
+        pixels[pixels == VALUE_OUT_OF_BOUNDS] = VALUE_SHOWING_MISSING_PIXEL
 
         # Change the format of the picture to the RGB format (for better visibility)
         pixels = change_codage(pixels, self.codage, Codage.RGB)
@@ -208,7 +198,7 @@ def get_center(pixels: np.ndarray) -> np.ndarray:
     return pixels[(pixels.shape[0] - 1) // 2, (pixels.shape[1] - 1) // 2]
 
 
-def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True):
+def show_patch(patch: np.ndarray, codage: Codage = Codage.HSV, show: bool = True):
     """ Plot le patch sur matplotlib et l'affiche sur demande.
     :param: patch, le patch à afficher.
     :param: codage, le codage utilisé pour le patch.
@@ -216,7 +206,8 @@ def show_patch(patch: np.ndarray, codage: Codage = Codage.RGB, show: bool = True
     """
     # Remove missing values
     new_patch = np.copy(patch)
-    new_patch[patch == VALUE_MISSING_PIXEL] = np.random.uniform(low=-1, high=1)
+    new_patch[patch == VALUE_MISSING_PIXEL] = VALUE_SHOWING_MISSING_PIXEL
+    new_patch[patch == VALUE_OUT_OF_BOUNDS] = VALUE_SHOWING_MISSING_PIXEL
 
     new_patch = change_codage(new_patch, codage, Codage.RGB)
     new_patch = normalize(new_patch, 0, 255, -1, 1).astype(uint8)
@@ -233,6 +224,54 @@ def flatten(patch: np.ndarray) -> np.ndarray:
 def unflatten(vector: np.ndarray, size_patch: int) -> np.ndarray:
     """ Convertit un vecteur en un patch. """
     return np.copy(vector).reshape(size_patch, size_patch, 3)
+
+
+def out_of_bounds(pixels: np.ndarray, x: int, y: int) -> bool:
+    """ Check if the pixel located at (x, y) is out of the bounds of the picture. """
+    return not (0 <= x < pixels.shape[1] and 0 <= y < pixels.shape[0])
+
+
+def out_of_bounds_patch(pixels: np.ndarray, x: int, y: int, size: int) -> bool:
+    return (x - (size // 2) <= 0) or \
+           (x + (size // 2) + 1 < pixels.shape[1]) or \
+           (y - (size // 2) <= 0) or \
+           (y + (size // 2) + 1 < pixels.shape[0])
+
+
+def get_patch(pixels: np.ndarray, x: int, y: int, size: int,
+              value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS) -> np.ndarray:
+    """ Retourne le patch de l'image centré aux indexes (x, y).
+    :param: x, l'index de la colonne.
+    :param: y, l'index de la ligne.
+    :param: size, la longueur du patch.
+    :return: Le contenu du patch demandé.
+    """
+    if not out_of_bounds_patch(pixels, x, y, size):
+        return pixels[y - (size // 2):y + (size // 2) + 1, x - (size // 2): x + (size // 2) + 1]
+    else:
+        patch = []
+        for index_y in range(y - (size // 2), y + (size // 2) + 1):
+            new_line = []
+            for index_x in range(x - (size // 2), x + (size // 2) + 1):
+                if not out_of_bounds(pixels, index_x, index_y):
+                    new_line.append(pixels[index_y, index_x])
+                else:
+                    new_line.append(value_out_of_bounds)
+            patch.append(np.array(new_line))
+        return np.array(patch)
+
+
+def iter_patch(x: int, y: int, size: int):
+    for index_y in range(y - (size // 2), y + (size // 2) + 1):
+        for index_x in range(x - (size // 2), x + (size // 2) + 1):
+            yield index_x, index_y
+
+
+def iter_patch_empty(pixels: np.ndarray, x: int, y: int, size: int):
+    for index_x, index_y in iter_patch(x, y, size):
+        if not out_of_bounds(pixels, index_x, index_y):
+            if all(pixels[index_y, index_x] == VALUE_MISSING_PIXEL):
+                yield index_x, index_y
 
 
 def _load_pixels(picture_path: str) -> Tuple[np.ndarray, int, int]:
