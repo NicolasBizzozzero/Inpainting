@@ -13,9 +13,9 @@ from src.linear.cost_function import *
 
 
 class InPainting:
-    def __init__(self, patch_size: int, step: int = None, value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL,
-                 value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS, alpha: float = 1.0, max_iterations: int = 1000,
-                 tolerance: float = 0.0001):
+    def __init__(self, patch_size: int, step: int = None, alpha: float = 1.0, max_iterations: int = 1000,
+                 tolerance: float = 0.0001, value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL,
+                 value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS):
         self.patch_size = patch_size
         self.step = patch_size if step is None else step
         self.value_missing_pixel = value_missing_pixel

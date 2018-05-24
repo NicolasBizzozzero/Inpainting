@@ -78,8 +78,8 @@ class Picture:
         """ Ajoute aléatoirement du bruit dans l'image.
         :param: threshold, seuil en dessous duquel on bruite le pixel.
         """
-        for x in range(self.largeur):
-            for y in range(self.hauteur):
+        for x in range(self.hauteur):
+            for y in range(self.largeur):
                 self.pixels[x, y] = VALUE_MISSING_PIXEL if random.random(
                 ) < threshold else self.pixels[x, y]
 
@@ -90,7 +90,7 @@ class Picture:
         :param: hauteur, La hauteur du rectangle
         :param: largeur, La largeur du rectangle
         """
-        self.pixels[x:x + largeur, y:y + hauteur] = VALUE_MISSING_PIXEL
+        self.pixels[x:x + hauteur, y:y + largeur] = VALUE_MISSING_PIXEL
 
     def get_pixel(self, x: int, y: int) -> np.ndarray:
         """ Retourne le pixel de l'image aux indexes (x, y).
@@ -115,7 +115,7 @@ class Picture:
                 new_line = []
                 for index_y in range(y - (size // 2), y + (size // 2) + 1):
                     if not self.out_of_bounds(index_x, index_y):
-                        new_line.append(self.get_pixel(index_x, index_y))
+                        new_line.append(self.pixels[index_x, index_y])
                     else:
                         new_line.append(VALUE_OUT_OF_BOUNDS)
                 patch.append(np.array(new_line))
@@ -125,7 +125,7 @@ class Picture:
         """ Retourne tous les indices des centres des patches de l'image contenant des pixels manquants.
         :return: Une list de patchs contenant des pixels manquants.
         """
-        return np.array([np.array([x, y]) for x in range(self.largeur) for y in range(self.hauteur) \
+        return np.array([np.array([x, y]) for x in range(self.hauteur) for y in range(self.largeur) \
                          if (self.get_pixel(x, y) == VALUE_MISSING_PIXEL).all()])
 
     def get_dictionnaire(self, size: int, step: int = 1, max_missing_pixel: int = 0) -> np.ndarray:
@@ -136,8 +136,8 @@ class Picture:
         :return: Une list de patchs ne contenant pas de pixels manquants.
         """
         result = []
-        for x in range(0, self.largeur, step):
-            for y in range(0, self.hauteur, step):
+        for x in range(0, self.hauteur, step):
+            for y in range(0, self.largeur, step):
                 if not self.out_of_bounds_patch(x, y, size):
                     patch = self.get_patch(x, y, size)
                     if len(patch[patch == VALUE_MISSING_PIXEL]) // 3 <= max_missing_pixel:
@@ -166,13 +166,13 @@ class Picture:
         >>> picture.out_of_bounds(-1, 512)
         True
         """
-        return not (0 <= x < self.largeur and 0 <= y < self.hauteur)
+        return not (0 <= x < self.hauteur and 0 <= y < self.largeur)
 
     def out_of_bounds_patch(self, x: int, y: int, size: int) -> bool:
         return (x - (size // 2) < 0) or \
-               (x + (size // 2) + 1 >= self.largeur) or \
+               (x + (size // 2) + 1 >= self.hauteur) or \
                (y - (size // 2) < 0) or \
-               (y + (size // 2) + 1 >= self.hauteur)
+               (y + (size // 2) + 1 >= self.largeur)
 
     def _get_showable_picture(self) -> np.ndarray:
         """ Return the picture in a showable format (as in a format which can be plotted by invocating `plt.imshow`on

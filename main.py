@@ -13,24 +13,53 @@ import numpy as np
 
 
 PATCH_SIZE = 5
-STEP = PATCH_SIZE // 2
+STEP = PATCH_SIZE
+ALPHA = 1.0
+MAX_ITERATIONS = 1000
+TOLERANCE = 0.0001
+VALUE_MISSING_PIXEL = VALUE_MISSING_PIXEL
+VALUE_OUT_OF_BOUNDS = VALUE_OUT_OF_BOUNDS
 CODAGE = Codage.RGB
-PICTURE_PATH = LENA_COLOR_512
 
 
-def main():
+def main_lena():
     # Chargement de l'image
-    original_picture = Picture(PICTURE_PATH, codage=CODAGE)
+    original_picture = Picture(picture_path=LENA_COLOR_512, codage=CODAGE)
 
     # Ajout du bruit
     noisy_picture = original_picture.copy()
-    # noisy_picture.add_noise(0.01)
+    noisy_picture.add_noise(0.005)
+
+    main_inpainting(original_picture, noisy_picture)
+
+
+def main_castle():
+    # Chargement de l'image
+    original_picture = Picture(picture_path=CASTLE, codage=CODAGE)
+
+    # Ajout du bruit
+    noisy_picture = original_picture.copy()# Ajout du bruit
+    noisy_picture.add_rectangle(400, 380, 50, 20)
+
+    main_inpainting(original_picture, noisy_picture)
+
+
+def main_outdoor():
+    # Chargement de l'image
+    original_picture = Picture(picture_path=OUTDOOR, codage=CODAGE)
+
+    # Ajout du bruit
+    noisy_picture = original_picture.copy()
     noisy_picture.add_rectangle(288, 497, 190, 80)
 
-    # On inpaint l'image !
-    inpainting = InPainting(PATCH_SIZE)
-    inpainted_picture = inpainting.inpaint(noisy_picture)
+    main_inpainting(original_picture, noisy_picture)
 
+
+def main_inpainting(original_picture, noisy_picture):
+    inpainting = InPainting(patch_size=PATCH_SIZE, step=STEP, alpha=ALPHA, max_iterations=MAX_ITERATIONS,
+                            tolerance=TOLERANCE, value_missing_pixel=VALUE_MISSING_PIXEL,
+                            value_out_of_bounds=VALUE_OUT_OF_BOUNDS)
+    inpainted_picture = inpainting.inpaint(noisy_picture)
     # Affichage des résultats
     show_pictures(pictures=[original_picture._get_showable_picture(), noisy_picture._get_showable_picture(),
                             inpainted_picture._get_showable_picture()],
@@ -70,4 +99,4 @@ def main_1_vs_all():
 
 
 if __name__ == "__main__":
-    main()
+    main_castle()
