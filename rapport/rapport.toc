@@ -5,8 +5,9 @@
 \contentsline {subsubsection}{\numberline {1.1.1}R\IeC {\'e}gularisation L2}{3}{subsubsection.0.1.1.1}
 \contentsline {subsubsection}{\numberline {1.1.2}R\IeC {\'e}gularisation L1}{3}{subsubsection.0.1.1.2}
 \contentsline {subsection}{\numberline {1.2}Description du protocole}{3}{subsection.0.1.2}
-\contentsline {subsection}{\numberline {1.3}Processus d'\IeC {\'e}valuation}{3}{subsection.0.1.3}
-\contentsline {subsubsection}{\numberline {1.3.1}Classe contre classe}{3}{subsubsection.0.1.3.1}
-\contentsline {subsubsection}{\numberline {1.3.2}1 contre tous}{3}{subsubsection.0.1.3.2}
-\contentsline {subsubsection}{\numberline {1.3.3}Vecteur de poids}{3}{subsubsection.0.1.3.3}
-\contentsline {section}{\numberline {2}LASSO et Inpainting}{4}{section.0.2}
+\contentsline {subsection}{\numberline {1.3}Analyse des r\IeC {\'e}sultats}{4}{subsection.0.1.3}
+\contentsline {section}{\numberline {2}LASSO et Inpainting}{5}{section.0.2}
+\contentsline {subsection}{\numberline {2.1}Introduction}{5}{subsection.0.2.1}
+\contentsline {subsubsection}{\numberline {2.1.1}Principe}{5}{subsubsection.0.2.1.1}
+\contentsline {subsubsection}{\numberline {2.1.2}D\IeC {\'e}roulement}{5}{subsubsection.0.2.1.2}
+\contentsline {subsubsection}{\numberline {2.1.3}Applications}{5}{subsubsection.0.2.1.3}

@@ -4,7 +4,9 @@ import os.path
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.linear_model import Lasso
 
+from src.linear.linear_regression import LinearRegression
 
 PATH_DIR_USPS = os.path.join(os.path.dirname(__file__), "../res/USPS")
 PATH_USPS_TRAIN = os.path.join(PATH_DIR_USPS, "USPS_train.txt")
@@ -23,6 +25,7 @@ def test_all_usps_1_vs_all(classifieur, **kwaargs):
         results[pos] = res
         print("W :", clsf.w)
         print("nb 0 :", len(clsf.w[clsf.w == 0]))
+        print("mean w :", np.mean(np.abs(clsf.w)))
         print("___")
     results = np.array(results).reshape((1, 10))
     print(results)
@@ -54,10 +57,103 @@ def test_all_usps(classifieur, **kwaargs):
             print("Result :", results[neg, pos])
             print("W :", clf.w)
             print("nb 0 :", len(clf.w[clf.w == 0]))
+            print("mean w :", np.mean(np.abs(clf.w)))
             print("___")
     sns.heatmap(results, vmin=0.0, vmax=1.0)
     # plt.show()
     plt.savefig("all_vs_all_" + kwaargs["loss_g"].__name__ + "_" + str(kwaargs["alpha"]) + ".png")
+    plt.close("all")
+
+
+def test_all_usps_sklearn(alpha):
+    np.set_printoptions(threshold=np.nan)  # Print all array
+
+    results = np.zeros((10, 10))
+    for neg in range(10):
+        for pos in range(neg + 1, 10):
+            print("neg=" + str(neg) + ", pos=" + str(pos))
+            clf = Lasso(alpha=alpha)
+            datax_train, datay_train, datax_test, datay_test = load_usps(neg, pos)
+            clf.fit(datax_train, datay_train)
+            score = (np.sign(clf.predict(datax_test)) == datay_test)
+            score = len(score[score == True]) / len(score)
+            results[neg, pos] = score
+            print("Result :", results[neg, pos])
+            print("W :", clf.coef_)
+            print("nb 0 :", len(clf.coef_[clf.coef_ == 0]))
+            print("mean w :", np.mean(np.abs(clf.coef_)))
+            print("___")
+    sns.heatmap(results, vmin=0.0, vmax=1.0)
+    # plt.show()
+    plt.savefig("all_vs_all_" + "sklearnlasso" + ".png")
+    plt.close("all")
+
+    from sklearn.linear_model import LinearRegression
+    results = np.zeros((10, 10))
+    for neg in range(10):
+        for pos in range(neg + 1, 10):
+            print("neg=" + str(neg) + ", pos=" + str(pos))
+            clf = LinearRegression()
+            datax_train, datay_train, datax_test, datay_test = load_usps(neg, pos)
+            clf.fit(datax_train, datay_train)
+            score = (np.sign(clf.predict(datax_test)) == datay_test)
+            score = len(score[score == True]) / len(score)
+            results[neg, pos] = score
+            print("Result :", score)
+            print("W :", clf.coef_)
+            print("nb 0 :", len(clf.coef_[clf.coef_ == 0]))
+            print("mean w :", np.mean(np.abs(clf.coef_)))
+            print("___")
+    sns.heatmap(results, vmin=0.0, vmax=1.0)
+    # plt.show()
+    plt.savefig("all_vs_all_" + "sklearnlinearregression" + ".png")
+    plt.close("all")
+
+
+def test_all_usps_1_vs_all_sklearn():
+    np.set_printoptions(threshold=np.nan)  # Print all array
+
+    results = np.zeros((10,))
+    for pos in range(10):
+        clsf = Lasso()
+        datax_train, datay_train, datax_test, datay_test = load_usps_1_vs_all(pos)
+        clsf.fit(datax_train, datay_train)
+        score = (np.sign(clsf.predict(datax_test)) == datay_test)
+        score = len(score[score == True]) / len(score)
+        print("pos:", pos, "score:", score)
+        results[pos] = score
+        print("W :", clsf.coef_)
+        print("nb 0 :", len(clsf.coef_[clsf.coef_ == 0]))
+        print("mean w :", np.mean(np.abs(clsf.coef_)))
+        print("___")
+    results = np.array(results).reshape((1, 10))
+    print(results)
+    fig, ax = plt.subplots(figsize=(4, 2))
+    sns.heatmap(results, ax=ax, vmin=0.0, vmax=1.0)
+    plt.yticks([], [])
+    plt.savefig("1_vs_all_" + "lasso" + ".png")
+    plt.close("all")
+
+    from sklearn.linear_model import LinearRegression
+    results = np.zeros((10,))
+    for pos in range(10):
+        clsf = LinearRegression()
+        datax_train, datay_train, datax_test, datay_test = load_usps_1_vs_all(pos)
+        clsf.fit(datax_train, datay_train)
+        score = (np.sign(clsf.predict(datax_test)) == datay_test)
+        score = len(score[score == True]) / len(score)
+        print("pos:", pos, "score:", score)
+        results[pos] = score
+        print("W :", clsf.coef_)
+        print("nb 0 :", len(clsf.coef_[clsf.coef_ == 0]))
+        print("mean w :", np.mean(np.abs(clsf.coef_)))
+        print("___")
+    results = np.array(results).reshape((1, 10))
+    print(results)
+    fig, ax = plt.subplots(figsize=(4, 2))
+    sns.heatmap(results, ax=ax, vmin=0.0, vmax=1.0)
+    plt.yticks([], [])
+    plt.savefig("1_vs_all_" + "linearregression" + ".png")
     plt.close("all")
 
 

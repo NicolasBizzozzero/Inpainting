@@ -3,7 +3,7 @@ from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_CO
     WOMAN_BLONDE, WOMAN_DARKHAIR, CASTLE, OUTDOOR
 from src.picture_tools.codage import Codage
 from src.picture_tools.picture import Picture, show_patch, flatten, unflatten, VALUE_MISSING_PIXEL, VALUE_OUT_OF_BOUNDS, get_patch
-from src.usps_tools import test_all_usps_1_vs_all, test_all_usps
+from src.usps_tools import test_all_usps_1_vs_all, test_all_usps, test_all_usps_sklearn, test_all_usps_1_vs_all_sklearn
 from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
 from src.inpainting import InPainting
 from src.common.matplotlib import show_pictures
@@ -38,7 +38,7 @@ def main_castle():
     original_picture = Picture(picture_path=CASTLE, codage=CODAGE)
 
     # Ajout du bruit
-    noisy_picture = original_picture.copy()# Ajout du bruit
+    noisy_picture = original_picture.copy()  # Ajout du bruit
     noisy_picture.add_rectangle(400, 380, 50, 20)
 
     main_inpainting(original_picture, noisy_picture)
@@ -68,11 +68,10 @@ def main_inpainting(original_picture, noisy_picture):
 
 def main_all_vs_all():
     print("TEST ALL VS ALL")
-    print("MSE")
-    # test_all_usps(classifieur=LinearRegression,
-    #               loss_g=mse_g,
-    #               type_descente=DescenteDeGradient.BATCH,
-    #               alpha=0)
+    test_all_usps(classifieur=LinearRegression,
+                  loss_g=mse_g,
+                  type_descente=DescenteDeGradient.BATCH,
+                  alpha=0)
     for loss_g in (l2_g, l1_g):
         for alpha in (0, 0.25, 0.5, 0.75, 1):
             print(loss_g.__name__, "alpha=" + str(alpha))
@@ -81,10 +80,11 @@ def main_all_vs_all():
                           type_descente=DescenteDeGradient.BATCH,
                           alpha=alpha)
 
+    test_all_usps_sklearn(alpha=1.0)
+
 
 def main_1_vs_all():
     print("TEST 1 VS ALL")
-    print("MSE")
     test_all_usps_1_vs_all(classifieur=LinearRegression,
                            loss_g=mse_g,
                            type_descente=DescenteDeGradient.BATCH,
@@ -99,4 +99,4 @@ def main_1_vs_all():
 
 
 if __name__ == "__main__":
-    main_castle()
+    pass

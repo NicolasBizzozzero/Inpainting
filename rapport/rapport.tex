@@ -1,5 +1,7 @@
 \documentclass[a4paper]{memoir}
 \usepackage{lecture-notes}
+\usepackage{float}
+
 
 
 \begin{document}
@@ -36,24 +38,68 @@ On va donc l'optimiser par descente de gradient, en utilisant le gradient suivan
 
 
 \subsection{Description du protocole}
-La base de données \textbf{USPS} étant déjà séparée en une base d'apprentissage et une base de test, nous pouvons facilement calculer le score obtenu sur cette même base de test. Nous proposons de comparer les résultats obtenus en classifiant \textbf{chaque classe contre chaque autre} dans un premier temps, puis dans du \textbf{1 contre tous} par la suite. Enfin, nous étudierons l'apparence du vecteur de poids obtenu par chaque classifieur.
+Le classifieur utilisé est, comme décrit dans l'énoncé, une simple \textbf{régression linéaire} adaptée à la classification binaire par la méthode du \textbf{plug-in}. Nous comparerons différentes fonctions de coût : \textbf{MSE}, \textbf{régularisation $L_2$} et \textbf{régularisation $L_1$}, ainsi que plusieurs valeurs du coefficient $\alpha$. De plus, nous comparons aussi nos résultats avec les implémentations \textit{LinearRegression} et \textit{Lasso} de la bibliothèque \textbf{sklearn} et adaptées par la \textit{méthode du plug-in}.\\
+
+La base de données \textbf{USPS} étant déjà séparée en une base d'apprentissage et une base de test, nous pouvons facilement calculer le score obtenu sur cette même base de test. Nous proposons de comparer les résultats obtenus en classifiant \textbf{chaque classe contre chaque autre} dans un premier temps, puis dans du \textbf{1 contre tous} par la suite. Enfin, nous étudierons l'apparence du vecteur de poids obtenu par chaque méthode de classification en comptant le \textbf{nombre de poids nuls} ainsi que la \textbf{moyenne de la valeur absolue des poids}.
 
 
-\subsection{Processus d'évaluation}
-\subsubsection{Classe contre classe}
+\subsection{Analyse des résultats}
+\begin{table}[H]
+  \centering
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{|l|c|c|c|}
+     \hline
+     \thead{Classifieur} & \thead{Score moyen} & \thead{Nombre de $0$} & \thead{moyenne de $|w|$} \\ \hline \hline
+     \textbf{Régression linéaire plug-in, $MSE$}                & 0.5290 & 0 & 0.25045 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.00$} & 0.4853 & 0 & 0.24862 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.25$} & 0.5179 & 0 & 0.00285 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.50$} & 0.5256 & 0 & 0.00308 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.75$} & 0.5276 & 0 & 0.00265 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=1.00$} & 0.5095 & 0 & 0.00258 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.00$} & 0.5638 & 0 & 0.24974 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.25$} & 0.5179 & 0 & 0.00387 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.50$} & 0.5016 & 0 & 0.00473 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.75$} & 0.5225 & 0 & 0.00573 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=1.00$} & 0.5229 & 0 & 0.00642 \\ \hline
+     \textbf{sklearn.LinearRegression plug-in, $\alpha=1.00$}   & 0.9732 & 17 & 99305970.4 \\ \hline
+     \textbf{sklearn.Lasso plug-in, $\alpha=1.00$}              & 0.5607 & 11520 & 0.00000 \\ \hline
+  \end{tabular}
+  \small{Résultats obtenus pour chaque classifieur sur la base \textbf{USPS} en \textbf{classe contre classe}}
+\end{table}
 
+\begin{table}[H]
+  \centering
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{|l|c|c|c|}
+     \hline
+     \thead{Classifieur} & \thead{Score moyen} & \thead{Nombre de $0$} & \thead{moyenne de $|w|$} \\ \hline \hline
+     \textbf{Régression linéaire plug-in, $MSE$}                & 0.8022 & 0 & 0.25628 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.00$} & 0.8089 & 0 & 0.24960 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.25$} & 0.7428 & 0 & 0.00421 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.50$} & 0.7517 & 0 & 0.00317 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.75$} & 0.9000 & 0 & 0.00512 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=1.00$} & 0.8263 & 0 & 0.00279 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.00$} & 0.8152 & 0 & 0.25186 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.25$} & 0.7354 & 0 & 0.00524 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.50$} & 0.6530 & 0 & 0.00643 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.75$} & 0.5762 & 0 & 0.00547 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=1.00$} & 0.5982 & 0 & 0.00702 \\ \hline
+     \textbf{sklearn.LinearRegression plug-in, $\alpha=1.00$}   & 0.9690 & 0 & 0.03485 \\ \hline
+     \textbf{sklearn.Lasso plug-in, $\alpha=1.00$}              & 0.9000 & 2560 & 0.00000 \\ \hline
+  \end{tabular}
+  \small{Résultats obtenus pour chaque classifieur sur la base \textbf{USPS} en \textbf{1 contre tous}}
+\end{table}
 
-\subsubsection{1 contre tous}
-
-
-
-\subsubsection{Vecteur de poids}
-
+TODO: Deduire sur l'utilité du Lasso
 
 
 \newpage
 \section{LASSO et Inpainting}
 \subsection{Introduction}
+\subsubsection{Principe}
+Le principe de l'\textbf{Inpainting} est qu'une partie d'une image, un \textbf{patch}, peut être approximé par une \textbf{combinaison linéaire d'autres patchs} de l'image. Cela permet ainsi de pouvoir restituer une partie manquante d'une image, de la débruiter, ou encore de supprimer de plus larges objets (défauts du visage, touristes, $\ldots$).
+
+
 \subsubsection{Déroulement}
 
 
