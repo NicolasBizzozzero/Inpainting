@@ -3,7 +3,8 @@ from src.picture_tools.examples import CAMERAMAN, HOUSE, JETPLANE, LAKE, LENA_CO
     WOMAN_BLONDE, WOMAN_DARKHAIR, CASTLE, OUTDOOR
 from src.picture_tools.codage import Codage
 from src.picture_tools.picture import Picture, show_patch, flatten, unflatten, VALUE_MISSING_PIXEL, VALUE_OUT_OF_BOUNDS, get_patch
-from src.usps_tools import test_all_usps_1_vs_all, test_all_usps, test_all_usps_sklearn, test_all_usps_1_vs_all_sklearn
+from src.usps_tools import test_all_usps_1_vs_all, test_all_usps, test_all_usps_sklearn, test_all_usps_1_vs_all_sklearn, \
+    load_usps_1_vs_all, load_usps
 from src.linear.linear_regression import LinearRegression, identite, mse_g, l1, l1_g, l2, l2_g, DescenteDeGradient
 from src.inpainting import InPainting
 from src.common.matplotlib import show_pictures
@@ -12,10 +13,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-PATCH_SIZE = 5
+PATCH_SIZE = 41
 STEP = PATCH_SIZE
-ALPHA = 1.0
-MAX_ITERATIONS = 1000
+ALPHA = 0.0001
+MAX_ITERATIONS = 100000
 TOLERANCE = 0.0001
 VALUE_MISSING_PIXEL = VALUE_MISSING_PIXEL
 VALUE_OUT_OF_BOUNDS = VALUE_OUT_OF_BOUNDS
@@ -99,4 +100,4 @@ def main_1_vs_all():
 
 
 if __name__ == "__main__":
-    pass
+    main_outdoor()

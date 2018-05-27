@@ -50,19 +50,20 @@ La base de données \textbf{USPS} étant déjà séparée en une base d'apprenti
   \begin{tabular}{|l|c|c|c|}
      \hline
      \thead{Classifieur} & \thead{Score moyen} & \thead{Nombre de $0$} & \thead{moyenne de $|w|$} \\ \hline \hline
-     \textbf{Régression linéaire plug-in, $MSE$}                & 0.5290 & 0 & 0.25045 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.00$} & 0.4853 & 0 & 0.24862 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.25$} & 0.5179 & 0 & 0.00285 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.50$} & 0.5256 & 0 & 0.00308 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.75$} & 0.5276 & 0 & 0.00265 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=1.00$} & 0.5095 & 0 & 0.00258 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.00$} & 0.5638 & 0 & 0.24974 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.25$} & 0.5179 & 0 & 0.00387 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.50$} & 0.5016 & 0 & 0.00473 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.75$} & 0.5225 & 0 & 0.00573 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=1.00$} & 0.5229 & 0 & 0.00642 \\ \hline
-     \textbf{sklearn.LinearRegression plug-in, $\alpha=1.00$}   & 0.9732 & 17 & 99305970.4 \\ \hline
-     \textbf{sklearn.Lasso plug-in, $\alpha=1.00$}              & 0.5607 & 11520 & 0.00000 \\ \hline
+     \textbf{Régression linéaire plug-in, $MSE$}                & 0.5290 & 0     & 0.25045    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.00$} & 0.4853 & 0     & 0.24862    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.25$} & 0.5179 & 0     & 0.00285    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.50$} & 0.5256 & 0     & 0.00308    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.75$} & 0.5276 & 0     & 0.00265    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=1.00$} & 0.5095 & 0     & 0.00258    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.00$} & 0.5638 & 0     & 0.24974    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.25$} & 0.5179 & 0     & 0.00387    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.50$} & 0.5016 & 0     & 0.00473    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.75$} & 0.5225 & 0     & 0.00573    \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=1.00$} & 0.5229 & 0     & 0.00642    \\ \hline
+     \textbf{sklearn.LinearRegression plug-in, $\alpha=1.00$}   & 0.9732 & 17    & 99305970.4 \\ \hline
+     \textbf{sklearn.Lasso plug-in, $\alpha=0.10$}              & 0.9535 & 10832 & 0.00444    \\ \hline
+     \textbf{sklearn.Lasso plug-in, $\alpha=1.00$}              & 0.5607 & 11520 & 0.00000    \\ \hline
   \end{tabular}
   \small{Résultats obtenus pour chaque classifieur sur la base \textbf{USPS} en \textbf{classe contre classe}}
 \end{table}
@@ -73,38 +74,39 @@ La base de données \textbf{USPS} étant déjà séparée en une base d'apprenti
   \begin{tabular}{|l|c|c|c|}
      \hline
      \thead{Classifieur} & \thead{Score moyen} & \thead{Nombre de $0$} & \thead{moyenne de $|w|$} \\ \hline \hline
-     \textbf{Régression linéaire plug-in, $MSE$}                & 0.8022 & 0 & 0.25628 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.00$} & 0.8089 & 0 & 0.24960 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.25$} & 0.7428 & 0 & 0.00421 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.50$} & 0.7517 & 0 & 0.00317 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.75$} & 0.9000 & 0 & 0.00512 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=1.00$} & 0.8263 & 0 & 0.00279 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.00$} & 0.8152 & 0 & 0.25186 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.25$} & 0.7354 & 0 & 0.00524 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.50$} & 0.6530 & 0 & 0.00643 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.75$} & 0.5762 & 0 & 0.00547 \\ \hline
-     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=1.00$} & 0.5982 & 0 & 0.00702 \\ \hline
-     \textbf{sklearn.LinearRegression plug-in, $\alpha=1.00$}   & 0.9690 & 0 & 0.03485 \\ \hline
+     \textbf{Régression linéaire plug-in, $MSE$}                & 0.8022 & 0    & 0.25628 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.00$} & 0.8089 & 0    & 0.24960 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.25$} & 0.7428 & 0    & 0.00421 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.50$} & 0.7517 & 0    & 0.00317 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=0.75$} & 0.9000 & 0    & 0.00512 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_2$, $\alpha=1.00$} & 0.8263 & 0    & 0.00279 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.00$} & 0.8152 & 0    & 0.25186 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.25$} & 0.7354 & 0    & 0.00524 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.50$} & 0.6530 & 0    & 0.00643 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=0.75$} & 0.5762 & 0    & 0.00547 \\ \hline
+     \textbf{Régression linéaire plug-in, $L_1$, $\alpha=1.00$} & 0.5982 & 0    & 0.00702 \\ \hline
+     \textbf{sklearn.LinearRegression plug-in, $\alpha=1.00$}   & 0.9690 & 0    & 0.03485 \\ \hline
+     \textbf{sklearn.Lasso plug-in, $\alpha=0.10$}              & 0.9204 & 2452 & 0.00125 \\ \hline
      \textbf{sklearn.Lasso plug-in, $\alpha=1.00$}              & 0.9000 & 2560 & 0.00000 \\ \hline
   \end{tabular}
   \small{Résultats obtenus pour chaque classifieur sur la base \textbf{USPS} en \textbf{1 contre tous}}
 \end{table}
 
-TODO: Deduire sur l'utilité du Lasso
+On remarque que nos régressions appliquées à la classification par la méthode \textbf{plug-in} sont peu efficaces. Celles de \textit{sklearn} en revanche obtiennent un score correct. De plus, toujours sur les implémentations de \textit{sklearn}, nous voyons que le \textbf{Lasso} augmente énormément le nombre de poids nuls et fait que les poids non-nuls se rapprochent beaucoup plus de $0$ qu'avec une simple régression linéaire. Nous en déduisons que le \textbf{Lasso} permet d'obtenir un vecteur de poids très sparse, utile lorsqu'on ne veut prendre en compte que quelques dimensions.
 
 
-\newpage
 \section{LASSO et Inpainting}
 \subsection{Introduction}
 \subsubsection{Principe}
-Le principe de l'\textbf{Inpainting} est qu'une partie d'une image, un \textbf{patch}, peut être approximé par une \textbf{combinaison linéaire d'autres patchs} de l'image. Cela permet ainsi de pouvoir restituer une partie manquante d'une image, de la débruiter, ou encore de supprimer de plus larges objets (défauts du visage, touristes, $\ldots$).
+Le principe de l'\textbf{Inpainting} est qu'une partie d'une image, un \textbf{patch}, peut être approximé par une \textbf{combinaison linéaire d'autres patchs} de l'image. Cela permet ainsi de pouvoir restituer une partie manquante d'une image, de la débruiter, ou encore de supprimer de plus larges objets (défauts du visage, touristes, $\ldots$). On va vouloir prendre en compte qu'un petit nombre de patchs : ceux qui contiennent le plus d'informations en commun avec la partie manquante. On va donc utiliser la fonction de coût \textbf{Lasso} afin d'avoir un vecteur de poids le plus sparse possible.
 
 
-\subsubsection{Déroulement}
+\subsubsection{Déroulement \& implémentation}
 
 
-\subsubsection{Applications}
-Marche bien pour recouvrir de larges zones. Permet de retirer des objets dans un but artistique (touristes sur une photo, défaut sur un visage).
+
+\subsubsection{De l'importance dans l'ordre de remplissage}
+L'ordre dans lequel on choisit de remplir les patchs à toute son importance. En effet, 
 
 
 

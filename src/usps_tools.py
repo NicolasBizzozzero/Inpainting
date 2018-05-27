@@ -8,6 +8,7 @@ from sklearn.linear_model import Lasso
 
 from src.linear.linear_regression import LinearRegression
 
+
 PATH_DIR_USPS = os.path.join(os.path.dirname(__file__), "../res/USPS")
 PATH_USPS_TRAIN = os.path.join(PATH_DIR_USPS, "USPS_train.txt")
 PATH_USPS_TEST = os.path.join(PATH_DIR_USPS, "USPS_test.txt")
