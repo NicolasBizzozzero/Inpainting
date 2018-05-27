@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-PATCH_SIZE = 41
-STEP = PATCH_SIZE
-ALPHA = 0.0001
+PATCH_SIZE = 101
+STEP = PATCH_SIZE // 4
+ALPHA = 0.00001
 MAX_ITERATIONS = 100000
 TOLERANCE = 0.0001
 VALUE_MISSING_PIXEL = VALUE_MISSING_PIXEL
@@ -56,15 +56,19 @@ def main_outdoor():
     main_inpainting(original_picture, noisy_picture)
 
 
-def main_inpainting(original_picture, noisy_picture):
-    inpainting = InPainting(patch_size=PATCH_SIZE, step=STEP, alpha=ALPHA, max_iterations=MAX_ITERATIONS,
-                            tolerance=TOLERANCE, value_missing_pixel=VALUE_MISSING_PIXEL,
-                            value_out_of_bounds=VALUE_OUT_OF_BOUNDS)
+def main_inpainting(original_picture, noisy_picture, patch_size=PATCH_SIZE, step=STEP, alpha=ALPHA,
+                    max_iterations=MAX_ITERATIONS, tolerance=TOLERANCE, value_missing_pixel=VALUE_MISSING_PIXEL,
+                    value_out_of_bounds=VALUE_OUT_OF_BOUNDS, save_path=None):
+    inpainting = InPainting(patch_size=patch_size, step=step, alpha=alpha, max_iterations=max_iterations,
+                            tolerance=tolerance, value_missing_pixel=value_missing_pixel,
+                            value_out_of_bounds=value_out_of_bounds)
     inpainted_picture = inpainting.inpaint(noisy_picture)
+
     # Affichage des résultats
     show_pictures(pictures=[original_picture._get_showable_picture(), noisy_picture._get_showable_picture(),
                             inpainted_picture._get_showable_picture()],
-                  titles=["Original picture", "Noisy picture", "InPainted picture"])
+                  titles=["Original picture", "Noisy picture", "InPainted picture"],
+                  save_path=save_path)
 
 
 def main_all_vs_all():

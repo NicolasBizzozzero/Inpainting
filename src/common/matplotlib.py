@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def show_pictures(pictures: iter, titles: List[str] = None, columns: int = 1):
+def show_pictures(pictures: iter, titles: List[str] = None, columns: int = 1, save_path: str = None):
     """ Display a list of images in a single figure with matplotlib.
 
     :param pictures: List of np.arrays compatible with plt.imshow
@@ -29,6 +29,10 @@ def show_pictures(pictures: iter, titles: List[str] = None, columns: int = 1):
         sub_figure.set_title(title)
         sub_figure.axis("off")
     fig.set_size_inches(np.array(fig.get_size_inches()) * len(pictures))
+
+    if save_path is not None:
+        plt.savefig(save_path)
+        plt.imread(save_path)
     plt.show()
 
 

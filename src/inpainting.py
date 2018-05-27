@@ -46,7 +46,6 @@ class InPainting:
 
         while self.value_missing_pixel in picture.pixels:
             # On récupère le prochain patch à traiter
-            # TODO: parfois, patch est vide
             next_pixel = self._get_next_patch(picture, self.patch_size, self.value_out_of_bounds,
                                               self.value_missing_pixel)
 

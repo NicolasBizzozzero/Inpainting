@@ -102,12 +102,81 @@ Le principe de l'\textbf{Inpainting} est qu'une partie d'une image, un \textbf{p
 
 
 \subsubsection{Déroulement \& implémentation}
+Tout d'abord, la \textbf{construction du dictionnaire de patchs} est effectuée : On récupère tous les patchs d'une certaine taille dont le signal est pur (qui ne contiennent pas de pixel manquant).\\
+Ensuite, on va boucler tant qu'il existe encore des pixels manquants dans l'image :
+\begin{itemize}
+\item On détermine le prochain patch à approximer
+\item On fait un apprentissage : Pour chaque emplacement de pixel non-vide du patch cible, on considère que les pixels de chaque patch du dictionnaire au même emplacement peuvent le reconstruire. On constitue donc nos ensembles d'apprentissage de cette façon.
+\item On prédit les valeurs de chaque pixel manquant du patch. 
+\end{itemize}
+
+Ainsi, nous remplissons l'image patch-par-patch et non pixel-par-pixel, pour garder une certaine cohérence spatiale dans notre reconstruction.\\
+
+Enfin, notre implémentation peut être paramétrée selon les critères suivants :
+\begin{itemize}
+\item \textbf{patch\_size} : La taille d'un patch de l'image.
+\item \textbf{step} : Le pas d'itération utilisé pour la construction du dictionnaire.
+\item \textbf{alpha} : L'importance accordée à la sparsité du vecteur de poids. 
+\item \textbf{max\_iterations} : Le seuil d'itérations maximum.
+\item \textbf{tolerance} : Le critère d'optimisation minimum avant arrêt.
+\end{itemize}
 
 
+\newpage
+\subsection{Résultats sur des images bruitées}
+\begin{center}
+\includegraphics[scale=0.55]{res/lena_color_512_0_005.png}\\
+\small{Inpainting de l'image \path{res/pictures/lena_color_512.tif}, $0.5\%$ de l'image bruitée.}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.55]{res/lena_gray_512_0_05.png}\\
+\small{Inpainting de l'image \path{res/pictures/lena_gray_512.tif}, $5\%$ de l'image bruitée.}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.55]{res/lena_color_512_0_1.png}\\
+\small{Inpainting de l'image \path{res/pictures/lena_color_512.tif}, $10\%$ de l'image bruitée.}
+\end{center}
+\begin{center}
+\includegraphics[scale=0.55]{res/lena_color_512_0_5.png}\\
+\small{Inpainting de l'image \path{res/pictures/lena_color_512.tif}, $50\%$ de l'image bruitée.}
+\end{center}
 
-\subsubsection{De l'importance dans l'ordre de remplissage}
-L'ordre dans lequel on choisit de remplir les patchs à toute son importance. En effet, 
+Nous obtenons des résultats visuellement très satisfaisants sur des pixels isolés. Et ce sans trop s'attarder sur les paramètres. Une petite taille de patch est cependant nécessaire pour des images beaucoup bruitées. On remarque aussi la difficulté d'approximer des détails non-redondants de l'image (l’extérieur des plumes, le contour du visage).
 
+
+\newpage
+\subsection{Résultats sur des patchs manquants}
+La reconstruction d'une plus grosse partie d'une image devient un peu plus compliquée. En effet, les patchs à reconstituer étant de taille plus importante, nous disposons de moins d'information pour chaque patch. Il va alors falloir s'y reprendre à plusieurs fois pour trouver de bons paramètres. Testons sur l'image \path{res/pictures/outdoor.jpg} :
+
+\begin{center}
+\includegraphics[scale=0.4]{res/outdoor_gros_alpha.png}\\
+\small{Ici, $\alpha=0.5$, ce qui est trop gros. On effectue une combinaison linéaire avec trop de patchs, ce qui explique cet effet de flou.}
+\end{center}
+
+\begin{center}
+\includegraphics[scale=0.4]{res/outdoor_petit_patch.png}\\
+\small{Ici, $patch\_size=5$, ce qui est trop petit. Les patchs ne contiennent pas assez d'information pour être correctement reconstruit. De plus, les pixels qui viennent juste d'être approximé sont trop pris en compte, ce qui donne un effet un peu ``baveux''.}
+\end{center}
+
+
+\begin{center}
+\includegraphics[scale=0.4]{res/outdoor_peu_iter.png}\\
+\small{Ici, $max\_iterations=1000$, ce qui est trop peu. On dépasse ce seuil avant d'avoir trouvé les poids optimaux pour notre reconstruction.}
+\end{center}
+
+
+\begin{center}
+\includegraphics[scale=0.4]{res/outdoor_parfait.png}\\
+\small{Ici, $\alpha=0.0001,\; patch\_size=101,\; max\_iterations=100.000$. La reconstruction parait visuellement correcte, mais elle peut sûrement être encore améliorée.}
+\end{center}
+
+
+\newpage
+\subsection{De l'importance dans l'ordre de remplissage}
+L'ordre dans lequel on choisit de remplir les patchs à toute son importance. En effet, nous utilisons un remplissage naïf de gauche à droite et de haut en bas. Ceci entraîne cependant une espèce de ``bavure'' (comme dans la deuxième figure obtenue). Ce résultat est décrit dans le papier de recherche $[3]$ donné en référence dans l'énoncé : Nous venons de reconstruire une forme particulière (comme un tronc d'arbre), et en remplissant les pixels juste en dessous à l'itération suivante, nous prendrons trop en compte les pixels que nous venons de reconstruire.\\
+Voici une manière efficace pour remplir un trou :\\
+Tout d'abord, assigner une valeur de \textbf{priorité} à chaque patch. Plus elle est haute, plus il faudra traiter ce patch en premier. On peut décompenser cette priorité en un \textit{produit de deux valeurs} : un coefficient d'\textbf{information}, indiquant à quel point un patch est proche de pixels purs, et un coefficient \textbf{isophotique}, caractérisant la force des \textit{isophotes} (la direction et l'intensité des pixels) autour du patch.\\
+Grossièrement, cette heuristique permet de reconstruire en premier lieu les contours du trou, tout en priorisant les gros changements d'intensité autour du trou (souvent liés à une coupe perpendiculaire au trou).
 
 
 \end{document}
