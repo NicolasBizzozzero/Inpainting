@@ -92,7 +92,8 @@ La base de données \textbf{USPS} étant déjà séparée en une base d'apprenti
   \small{Résultats obtenus pour chaque classifieur sur la base \textbf{USPS} en \textbf{1 contre tous}}
 \end{table}
 
-On remarque que nos régressions appliquées à la classification par la méthode \textbf{plug-in} sont peu efficaces. Celles de \textit{sklearn} en revanche obtiennent un score correct. De plus, toujours sur les implémentations de \textit{sklearn}, nous voyons que le \textbf{Lasso} augmente énormément le nombre de poids nuls et fait que les poids non-nuls se rapprochent beaucoup plus de $0$ qu'avec une simple régression linéaire. Nous en déduisons que le \textbf{Lasso} permet d'obtenir un vecteur de poids très sparse, utile lorsqu'on ne veut prendre en compte que quelques dimensions.
+On remarque que nos régressions appliquées à la classification par la méthode \textbf{plug-in} sont peu efficaces. Celles de \textit{sklearn} en revanche obtiennent un score correct. De plus, toujours sur les implémentations de \textit{sklearn}, nous voyons que le \textbf{Lasso} augmente énormément le nombre de poids nuls et fait que les poids non-nuls se rapprochent beaucoup plus de $0$ qu'avec une simple régression linéaire. Nous en déduisons que le \textbf{Lasso} permet d'obtenir un vecteur de poids très sparse, utile lorsqu'on ne veut prendre en compte que quelques dimensions.\\
+Après quelques recherches, il s'avère que si notre implémentation du Lasso ne fait que réduire les valeurs des poids sans les rendre nuls, c'est parce que nous utilisons la descente de gradient pour optimiser notre modèle. En effet, pour obtenir un vecteur sparse, la méthode d'optimisation par ``coordinate descent'' est plus appropriée.
 
 
 \section{LASSO et Inpainting}
