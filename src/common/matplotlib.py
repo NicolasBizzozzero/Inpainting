@@ -10,6 +10,7 @@ def show_pictures(pictures: iter, titles: List[str] = None, columns: int = 1, sa
     :param pictures: List of np.arrays compatible with plt.imshow
     :param titles: List of titles corresponding to each image. Must have the same length as titles.
     :param columns: Number of columns in figure (number of rows is set to np.ceil(n_images / float(cols)))
+    :param save_path: If provided, where to save the final figure.
 
     Source :
         https://gist.github.com/soply/f3eec2e79c165e39c9d540e916142ae1

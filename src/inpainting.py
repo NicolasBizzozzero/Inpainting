@@ -1,20 +1,18 @@
-from multiprocessing import Process
-from typing import List, Tuple
-from copy import copy
+from typing import Tuple
 
 import numpy as np
+
 from sklearn.linear_model import Lasso
 from progressbar import ProgressBar, Percentage, Counter, Timer, ETA
 
-from src.common.decorators import time_this
-from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL, VALUE_OUT_OF_BOUNDS, get_center, flatten, unflatten, \
-    show_patch, get_patch, iter_patch, iter_patch_empty
-from src.linear.cost_function import *
+from src.common.math import Number
+from src.picture_tools.picture import Picture, VALUE_MISSING_PIXEL, VALUE_OUT_OF_BOUNDS, get_center, flatten, \
+    unflatten, show_patch, get_patch, iter_patch, iter_patch_empty
 
 
 class InPainting:
-    def __init__(self, patch_size: int, step: int = None, alpha: float = 1.0, max_iterations: int = 1000,
-                 tolerance: float = 0.0001, value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL,
+    def __init__(self, patch_size: int, step: int = None, alpha: Number = 1.0, max_iterations: int = 1e+3,
+                 tolerance: Number = 1e-4, value_missing_pixel: np.ndarray = VALUE_MISSING_PIXEL,
                  value_out_of_bounds: np.ndarray = VALUE_OUT_OF_BOUNDS):
         self.patch_size = patch_size
         self.step = patch_size if step is None else step
@@ -32,36 +30,31 @@ class InPainting:
     def inpaint(self, picture: Picture) -> Picture:
         picture = picture.copy()
 
-        # Initialisation de la barre de progression
+        # Init progressbar
         number_of_pixels_to_process = len(picture.pixels[picture.pixels == self.value_missing_pixel]) // 3
         progress_bar_widgets = ["Inpainting: processed ", Counter(), "/{} pixels [".format(number_of_pixels_to_process),
                                 Percentage(), "], ", Timer(), ", ", ETA()]
-        progress_bar = ProgressBar(widgets=progress_bar_widgets,
-                                   minval=0,
-                                   maxval=number_of_pixels_to_process)
-        progress_bar.start()
 
-        # On récupère le dictionnaire
-        dictionary = picture.get_dictionnaire(self.patch_size, self.step, max_missing_pixel=0)
+        # Retrieve the picture's dictionary
+        dictionary = picture.get_dictionary(self.patch_size, self.step, max_missing_pixel=0)
 
-        while self.value_missing_pixel in picture.pixels:
-            # On récupère le prochain patch à traiter
-            next_pixel = self._get_next_patch(picture, self.patch_size, self.value_out_of_bounds,
-                                              self.value_missing_pixel)
+        with ProgressBar(widgets=progress_bar_widgets, minval=0, maxval=number_of_pixels_to_process) as progress_bar:
+            while self.value_missing_pixel in picture.pixels:
+                # Retrieve the next patch containing missing values
+                next_pixel = self._get_next_patch(picture, self.patch_size, self.value_out_of_bounds,
+                                                  self.value_missing_pixel)
 
-            # On reconstruit le patch selectionné
-            next_patch = picture.get_patch(*next_pixel, self.patch_size)
+                # Inpaint the selected patch
+                next_patch = picture.get_patch(*next_pixel, self.patch_size)
 
-            self.fit(dictionary, next_patch)
-            for x, y in iter_patch_empty(picture.pixels, *next_pixel, self.patch_size):
-                next_pixel_value = self.predict(x - next_pixel[0] + (self.patch_size // 2),
-                                                y - next_pixel[1] + (self.patch_size // 2),
-                                                dictionary)
-                picture.pixels[x, y] = next_pixel_value
-                progress_bar.update(progress_bar.value + 1)
-
-        progress_bar.finish()
-        return picture
+                self.fit(dictionary, next_patch)
+                for x, y in iter_patch_empty(picture.pixels, *next_pixel, self.patch_size):
+                    next_pixel_value = self.predict(x - next_pixel[0] + (self.patch_size // 2),
+                                                    y - next_pixel[1] + (self.patch_size // 2),
+                                                    dictionary)
+                    picture.pixels[x, y] = next_pixel_value
+                    progress_bar.update(progress_bar.value + 1)
+            return picture
 
     def fit(self, dictionary, patch):
         datax_hue, datax_saturation, datax_value, datay_hue, datay_saturation, datay_value = \
@@ -92,10 +85,10 @@ class InPainting:
     def _preprocess_training_data(self, patch, dictionary):
         datax_hue, datax_saturation, datax_value, datay_hue, datay_saturation, datay_value = [], [], [], [], [], []
 
-        # On itère sur chaque pixel du patch à reconstruire
+        # Iterate trough each pixels of the patch to inpaint
         for x in range(self.patch_size):
             for y in range(self.patch_size):
-                # Si on tombe sur une valeur manquante, on ne l'ajoute évidemment pas (impossible à apprendre)
+                # Ignore missing-pixels in the patch, we cannot learn from them
                 if np.all(patch[x, y] != self.value_missing_pixel) and np.all(patch[x, y] != self.value_out_of_bounds):
                     datax_hue.append(dictionary[:, x, y, 0])
                     datax_saturation.append(dictionary[:, x, y, 1])
@@ -105,8 +98,8 @@ class InPainting:
                     datay_value.append(patch[x, y, 2])
 
         return np.array(datax_hue), np.array(datax_saturation), \
-               np.array(datax_value), np.array(datay_hue), \
-               np.array(datay_saturation), np.array(datay_value)
+            np.array(datax_value), np.array(datay_hue), \
+            np.array(datay_saturation), np.array(datay_value)
 
 
 def patch_priority(pixels: np.ndarray, pixels_confidence: np.ndarray, x: int, y: int, size: int,

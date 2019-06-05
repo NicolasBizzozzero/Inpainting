@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-""" Ce module contient des examples d'images courament utilisés dans le traitement d'image.
-"""
+
 from os.path import join, dirname
 
 
