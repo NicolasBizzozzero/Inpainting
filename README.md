@@ -3,7 +3,7 @@ This project aims at rebuild "damaged" pictures by learning a sparse representat
 
 
 ## Model
-The model is composed of 3 Linear regressions (one per channel) with $L_1$ regularization (aka Lasso).
+The model is composed of 3 Linear regressions (one per channel) with L1 regularization (aka Lasso).
 It encodes the picture to a HSV color model, normalize its pixels between [-1, 1], and learn which sparse combination of pixels can properly rebuild the picture.
 
 
