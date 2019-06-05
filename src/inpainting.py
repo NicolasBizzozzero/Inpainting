@@ -36,9 +36,11 @@ class InPainting:
                                 Percentage(), "], ", Timer(), ", ", ETA()]
 
         # Retrieve the picture's dictionary
+        print("Computing picture's dictionary")
         dictionary = picture.get_dictionary(self.patch_size, self.step, max_missing_pixel=0)
 
         with ProgressBar(widgets=progress_bar_widgets, minval=0, maxval=number_of_pixels_to_process) as progress_bar:
+            progress_bar.start()
             while self.value_missing_pixel in picture.pixels:
                 # Retrieve the next patch containing missing values
                 next_pixel = self._get_next_patch(picture, self.patch_size, self.value_out_of_bounds,
